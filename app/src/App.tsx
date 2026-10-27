@@ -1,4 +1,3 @@
-import { flushSync } from "react-dom";
 import {
   useCallback,
   useEffect,
@@ -25,14 +24,23 @@ import {
   STAY_BRIDGE_READY_EVENT,
   STAY_TOKEN_EVENT,
 } from "./stayAuth";
+import {
+  clearSession,
+  isSessionStorageEvent,
+  restoreSession,
+  saveSession,
+  type SavedAuthSession,
+} from "./authSession";
 
-type AuthOrigin = "manual" | "clipboard" | "stay" | "demo";
+type AuthOrigin = "manual" | "clipboard" | "stay" | "restored" | "demo";
 
 function expiredSessionMessage(origin: AuthOrigin) {
   if (origin === "stay")
     return "Срок действия сеанса истёк. Откройте оригинальный CleverVet, затем снова откройте Test2.";
   if (origin === "clipboard")
     return "Срок действия токена истёк. Откройте оригинальный CleverVet и снова запустите команду.";
+  if (origin === "restored")
+    return "Срок действия сохранённой сессии истёк. Откройте оригинальный CleverVet, чтобы Stay передал новый токен.";
   return "Срок действия токена истёк. Подключитесь заново.";
 }
 
@@ -45,27 +53,105 @@ export function App() {
     startOnPatients: boolean;
     authOrigin: AuthOrigin;
   } | null>(null);
-  const [message, setMessage] = useState("");
+  const restoreInitialized = useRef(false);
+  const initialRestore = useRef<ReturnType<typeof restoreSession> | null>(null);
+  if (!restoreInitialized.current) {
+    initialRestore.current = restoreSession();
+    restoreInitialized.current = true;
+  }
+  const [restoreState, setRestoreState] = useState<{
+    status: "idle" | "restoring" | "failed";
+    candidate: SavedAuthSession | null;
+  }>(() => ({
+    status: initialRestore.current?.session ? "restoring" : "idle",
+    candidate: initialRestore.current?.session ?? null,
+  }));
+  const [restoreSequence, setRestoreSequence] = useState(0);
+  const [message, setMessage] = useState(() =>
+    initialRestore.current && !initialRestore.current.storageAvailable
+      ? "Safari не разрешил доступ к сохранённой сессии. Вход будет действовать только в этой вкладке."
+      : initialRestore.current?.discarded
+        ? "Сохранённая сессия истекла или повреждена. Подключитесь заново."
+        : "",
+  );
   const [quickAuth, setQuickAuth] = useState(authImportRequested);
+  initialRestore.current = null;
   const sessionRef = useRef(session);
   sessionRef.current = session;
   const logout = useCallback(
-    (message = "Сеанс завершён. Токен и оперативные данные очищены.") => {
+    (
+      message = "Сеанс завершён. Токен и оперативные данные очищены.",
+      removeSaved = true,
+    ) => {
       sessionRef.current?.source.close();
       sessionRef.current = null;
       setSession(null);
-      setMessage(message);
+      const cleared = !removeSaved || clearSession();
+      setMessage(
+        cleared
+          ? message
+          : `${message} Safari не разрешил очистить сохранённую запись; удалите данные сайта Test2 в настройках Safari.`,
+      );
+      setRestoreState({ status: "idle", candidate: null });
     },
     [],
   );
   useEffect(() => {
-    const onHide = () => flushSync(() => logout());
-    window.addEventListener("pagehide", onHide);
+    const onStorage = (event: StorageEvent) => {
+      if (isSessionStorageEvent(event) && sessionRef.current)
+        logout("Сеанс завершён в другой вкладке.", false);
+    };
+    window.addEventListener("storage", onStorage);
     return () => {
-      window.removeEventListener("pagehide", onHide);
+      window.removeEventListener("storage", onStorage);
       sessionRef.current?.source.close();
     };
   }, [logout]);
+  useEffect(() => {
+    if (restoreState.status !== "restoring" || !restoreState.candidate) return;
+    const saved = restoreState.candidate;
+    const source = createSessionApi(saved.accessToken);
+    let cancelled = false;
+    let handedOff = false;
+    setRestoreState((state) => ({ ...state, candidate: null }));
+    void source.branches().then(
+      (branches) => {
+        if (cancelled) {
+          source.close();
+          return;
+        }
+        setMessage("");
+        handedOff = true;
+        setSession({
+          source,
+          branches,
+          expiresAt: saved.expiresAt,
+          expiryWarning: tokenExpiryWarning(saved.expiresAt),
+          startOnPatients: true,
+          authOrigin: "restored",
+        });
+        setRestoreState({ status: "idle", candidate: null });
+      },
+      (error) => {
+        source.close();
+        if (cancelled) return;
+        if (error instanceof ApiError && error.kind === "Unauthorized") {
+          clearSession();
+          setMessage(expiredSessionMessage("restored"));
+          setRestoreState({ status: "idle", candidate: null });
+          return;
+        }
+        setMessage(
+          `${safeError(error)} Сохранённая сессия не удалена. Можно повторить проверку.`,
+        );
+        setRestoreState({ status: "failed", candidate: null });
+      },
+    );
+    return () => {
+      cancelled = true;
+      if (!handedOff) source.close();
+    };
+  }, [restoreSequence, restoreState.status]);
   useEffect(() => {
     if (!session?.expiresAt) return;
     let timer = 0;
@@ -96,11 +182,62 @@ export function App() {
         </div>
         <span className="read-badge">Просмотр / отметки</span>
       </header>
-      {session ? (
+      {restoreState.status === "restoring" ? (
+        <main className="connect-page">
+          <section className="panel connect-card" role="status">
+            <h1>Восстановление сессии</h1>
+            <p className="muted">Проверяем сохранённый доступ к CleverVet…</p>
+          </section>
+        </main>
+      ) : restoreState.status === "failed" ? (
+        <main className="connect-page">
+          <section className="panel connect-card">
+            <h1>Не удалось проверить сессию</h1>
+            {message && <ErrorBox message={message} />}
+            <button
+              type="button"
+              className="primary full"
+              onClick={() => {
+                const restored = restoreSession();
+                if (!restored.session) {
+                  setMessage(
+                    "Сохранённая сессия больше недоступна. Подключитесь заново.",
+                  );
+                  setRestoreState({ status: "idle", candidate: null });
+                  return;
+                }
+                setRestoreState({
+                  status: "restoring",
+                  candidate: restored.session,
+                });
+                setRestoreSequence((value) => value + 1);
+              }}
+            >
+              Повторить проверку
+            </button>
+            <button
+              type="button"
+              className="quiet full"
+              onClick={() => {
+                clearSession();
+                setRestoreState({ status: "idle", candidate: null });
+                setMessage("");
+              }}
+            >
+              Войти другим способом
+            </button>
+          </section>
+        </main>
+      ) : session ? (
         <>
           {session.expiryWarning && (
             <p className="auth-expiry-warning" role="status">
               {session.expiryWarning}
+            </p>
+          )}
+          {message && (
+            <p className="auth-expiry-warning" role="status">
+              {message}
             </p>
           )}
           <Workspace
@@ -121,10 +258,16 @@ export function App() {
             clearAuthImportParameter();
             setQuickAuth(false);
           }}
-          onConnect={(source, branches, expiresAt, authOrigin) => {
+          onConnect={(
+            source,
+            branches,
+            expiresAt,
+            authOrigin,
+            persistenceWarning,
+          ) => {
             clearAuthImportParameter();
             setQuickAuth(false);
-            setMessage("");
+            setMessage(persistenceWarning);
             setSession({
               source,
               branches,
@@ -154,6 +297,7 @@ function Connect({
     b: Branch[],
     expiresAt: number | null,
     authOrigin: AuthOrigin,
+    persistenceWarning: string,
   ) => void;
 }) {
   const input = useRef<HTMLInputElement>(null),
@@ -172,6 +316,7 @@ function Connect({
     if (input.current) input.current.value = "";
     setBusy(false);
     setError("");
+    clearSession();
   };
   useEffect(() => {
     const clear = () => {
@@ -223,7 +368,6 @@ function Connect({
     setBusy(true);
     setError("");
     const source = demo ? createDemoSession(big) : createSessionApi(token);
-    token = "";
     pending.current = source;
     try {
       const branches = await source.branches();
@@ -232,7 +376,23 @@ function Connect({
         return;
       }
       pending.current = null;
-      onConnect(source, branches, expiresAt, origin);
+      let savedExpiresAt = expiresAt;
+      let persistenceWarning = "";
+      if (!demo) {
+        const persisted = saveSession(token, expiresAt);
+        savedExpiresAt = persisted.session.expiresAt;
+        if (!persisted.saved)
+          persistenceWarning =
+            "Safari не разрешил сохранить сессию. Вход действует, но после закрытия вкладки потребуется подключиться снова.";
+      }
+      onConnect(
+        source,
+        branches,
+        savedExpiresAt,
+        origin,
+        persistenceWarning,
+      );
+      token = "";
     } catch (error) {
       source.close();
       if (current === sequence.current)
@@ -246,6 +406,7 @@ function Connect({
             : safeError(error),
         );
     } finally {
+      token = "";
       if (current === sequence.current) {
         pending.current = null;
         busyRef.current = false;
@@ -358,8 +519,8 @@ function Connect({
               disabled={busy}
             />
             <p className="micro">
-              Токен только в памяти вкладки. После обновления страницы
-              потребуется повторный вход.
+              Действующий токен сохраняется только в хранилище Test2 и
+              удаляется при выходе или истечении срока.
             </p>
             <button type="submit" className="primary full" disabled={busy}>
               {busy ? "Подключение…" : "Подключиться →"}
@@ -399,7 +560,7 @@ function Connect({
         </button>
       </section>
       <footer>
-        iPhone / Safari · токен и медицинские данные только в памяти
+        iPhone / Safari · медицинские данные только в памяти
       </footer>
     </main>
   );

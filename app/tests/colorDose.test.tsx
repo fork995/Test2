@@ -202,7 +202,10 @@ async function grid() {
 async function reload() {
   await act(async () => root.unmount());
   root = createRoot(container);
-  await login();
+  await act(async () => {
+    root.render(<App />);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
   await grid();
 }
 const cell = () =>

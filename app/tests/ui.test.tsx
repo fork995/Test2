@@ -712,13 +712,13 @@ it("CORS/network TypeError has no raw private message and 403 can be retried at 
   expect(container.textContent).toContain("Доступ запрещён");
   expect((container.querySelector("#jwt") as HTMLInputElement).value).toBe("");
 });
-it("pagehide clears session synchronously for bfcache", async () => {
+it("pagehide keeps the active session for Safari tab restoration", async () => {
   await openDemo();
   await act(async () => {
     window.dispatchEvent(new Event("pagehide"));
-    expect(container.querySelector(".work-patient")).toBeNull();
+    expect(container.querySelector(".work-patient")).not.toBeNull();
   });
-  expect(container.querySelector("#jwt")).not.toBeNull();
+  expect(container.querySelector("#jwt")).toBeNull();
 });
 it("shift navigation uses real boundaries rather than opening minutes", async () => {
   realMock();

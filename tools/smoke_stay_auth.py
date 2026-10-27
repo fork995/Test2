@@ -94,6 +94,15 @@ def run(browser, width):
         "branches",
         "branches/branch/departments/department/patients",
     ]
+    page.reload(wait_until="networkidle")
+    page.get_by_role("button", name="Пациенты", exact=True).wait_for()
+    assert page.evaluate("window.__stayTransfers") == 0
+    assert calls == [
+        "branches",
+        "branches/branch/departments/department/patients",
+        "branches",
+        "branches/branch/departments/department/patients",
+    ]
     assert not errors
     assert not page.evaluate("document.documentElement.scrollWidth > innerWidth")
     if width == 390:
@@ -102,6 +111,7 @@ def run(browser, width):
     return {
         "width": width,
         "stay_transfers": 1,
+        "restored_after_reload_without_stay": True,
         "patients_opened": True,
         "mock_get_requests": len(calls),
         "write_requests": 0,

@@ -9,9 +9,16 @@ const files = readdirSync(join(root, "src")).filter((f) =>
 const source = files
   .map((f) => readFileSync(join(root, "src", f), "utf8"))
   .join("\n");
-it("only allowlisted nonclinical preferences can use persistent storage", () => {
+it("only allowlisted preferences and the minimal auth session can use persistent storage", () => {
   const noPreferences = files
-    .filter((f) => !["preferences.ts", "startupDiagnostics.ts"].includes(f))
+    .filter(
+      (f) =>
+        ![
+          "preferences.ts",
+          "authSession.ts",
+          "startupDiagnostics.ts",
+        ].includes(f),
+    )
     .map((f) => readFileSync(join(root, "src", f), "utf8"))
     .join("\n");
   expect(noPreferences).not.toMatch(
@@ -114,6 +121,9 @@ it("only allowlisted nonclinical preferences can use persistent storage", () => 
   );
   expect(stayUserscript.match(/^\/\/ @match\s+/gm)).toHaveLength(2);
   expect(stayUserscript).toContain("GM_deleteValue(STORAGE_KEY)");
+  const authSession = readFileSync(join(root, "src/authSession.ts"), "utf8");
+  expect(authSession).toContain("accessToken");
+  expect(authSession).not.toMatch(/refreshToken|refresh_token|password|profile/);
 });
 it("limits production resources to local assets and the CleverVet API", () => {
   const html = readFileSync(join(root, "index.html"), "utf8");

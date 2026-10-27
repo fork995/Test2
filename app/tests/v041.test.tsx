@@ -201,7 +201,13 @@ async function login() {
 async function remount() {
   await act(async () => root.unmount());
   root = createRoot(container);
-  await login();
+  await act(async () => {
+    root.render(<App />);
+    await Promise.resolve();
+  });
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
 }
 it("initial login selects authorized target IDs without wrong or duplicate startup requests", async () => {
   const calls = mockServer();
@@ -219,7 +225,7 @@ it("initial login selects authorized target IDs without wrong or duplicate start
   await click(container.querySelector(".current-block .work-item")!);
   expect(button("Отметить выполнение")).toBeTruthy();
 });
-it("manual department choice and disabled editing survive reload and keep auth in memory", async () => {
+it("manual department choice, disabled editing and auth survive reload", async () => {
   const calls = mockServer();
   await login();
   await nav("Настройки");
@@ -254,11 +260,11 @@ it("manual department choice and disabled editing survive reload and keep auth i
       ) as HTMLInputElement
     ).checked,
   ).toBe(false);
-  expect(JSON.stringify(Object.values(localStorage))).not.toContain(
-    "MOCK_VALUE_NOT_JWT",
-  );
   expect(localStorage.getItem("clevervet.mobile.preferences.v1")).not.toContain(
     "Учебный пациент",
+  );
+  expect(localStorage.getItem("clevervet.mobile.preferences.v1")).not.toContain(
+    "MOCK_VALUE_NOT_JWT",
   );
 });
 it("default enabled editing survives a page reload without toggling", async () => {

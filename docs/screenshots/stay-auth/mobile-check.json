@@ -1,0 +1,33 @@
+{
+  "target": "http://127.0.0.1:4187/Test2/",
+  "browser": "Chromium mobile emulation, not physical Safari",
+  "checks": [
+    {
+      "width": 375,
+      "stay_transfers": 1,
+      "patients_opened": true,
+      "mock_get_requests": 2,
+      "write_requests": 0,
+      "uncaught_errors": 0,
+      "horizontal_overflow": false
+    },
+    {
+      "width": 390,
+      "stay_transfers": 1,
+      "patients_opened": true,
+      "mock_get_requests": 2,
+      "write_requests": 0,
+      "uncaught_errors": 0,
+      "horizontal_overflow": false
+    },
+    {
+      "width": 430,
+      "stay_transfers": 1,
+      "patients_opened": true,
+      "mock_get_requests": 2,
+      "write_requests": 0,
+      "uncaught_errors": 0,
+      "horizontal_overflow": false
+    }
+  ]
+}

@@ -379,6 +379,16 @@ it("global category filters apply to every patient's current and next-hour group
     container.querySelector(".next-block .work-patient-toggle"),
   ).toBeNull();
 });
+it("groups grid categories in the confirmed order without changing assignment identities", async () => {
+  await openDemo();
+  await nav("Пациенты");
+  await click(container.querySelector(".patient-card")!);
+  await click(button("Сетка", container.querySelector(".view-switch")!));
+  const headings = [...container.querySelectorAll(".grid-category")].map(e => e.textContent);
+  expect(headings).toEqual(["Мониторинг", "Оценка состояния", "Растворы", "Медикаменты", "Процедуры", "Уход"]);
+  const rows = [...container.querySelectorAll(".name-cell")].map(e => e.getAttribute("title"));
+  expect(new Set(rows).size).toBe(rows.length);
+});
 it("individual patient defaults to the same worklist and can switch to grid and back without GET", async () => {
   const calls = realMock();
   await connect();
@@ -490,7 +500,7 @@ it("large worklists use windowing rather than pages, and grid stays virtualized"
   await click(button("Сетка", container.querySelector(".view-switch")!));
   expect(
     container.querySelector("[role=table]")?.getAttribute("aria-rowcount"),
-  ).toBe("361");
+  ).toBe("367");
   expect(container.querySelectorAll(".hour-cell").length).toBeLessThan(400);
   expect(fetch).not.toHaveBeenCalled();
 });

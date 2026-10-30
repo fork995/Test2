@@ -2650,3 +2650,9 @@ a {
 .grid-expand { display:grid; place-items:center; width:38px; height:38px; padding:0; border-radius:9px; background:#24383d; color:#dceae7; }
 .grid-frame-expanded { position:fixed; inset:0; z-index:30; display:flex; flex-direction:column; padding: max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left)); background:#10191c; }
 .individual-workspace .grid-frame-expanded .grid-scroll { flex:1; height:auto; min-height:0; max-height:none; }
+
+.grid-category { position:absolute; left:0; width:100%; height:28px; background:#30494b; color:#dcece8; font-size:11px; font-weight:700; text-transform:uppercase; }
+.grid-category span { position:sticky; left:0; display:inline-flex; align-items:center; height:28px; padding:0 8px; }
+.grid-frame-expanded { height:100dvh; inset:0 auto auto 0; width:100%; box-sizing:border-box; }
+.grid-frame-expanded .grid-toolbar { flex:none; margin:0; height:32px; }
+.grid-frame-expanded .grid-expand { width:32px; height:32px; }

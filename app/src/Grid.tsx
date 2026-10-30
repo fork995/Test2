@@ -39,6 +39,7 @@ const GridRow = memo(function GridRow({
   now,
   onSelect,
   position,
+  rowNumber,
   fromColumn,
   toColumn,
 }: {
@@ -49,6 +50,7 @@ const GridRow = memo(function GridRow({
   now: number;
   onSelect: (s: Selection) => void;
   position: number;
+  rowNumber: number;
   fromColumn: number;
   toColumn: number;
 }) {
@@ -89,8 +91,8 @@ const GridRow = memo(function GridRow({
     <div
       className="grid-row"
       role="row"
-      aria-rowindex={position + 2}
-      style={{ top: position * ROW }}
+      aria-rowindex={rowNumber + 2}
+      style={{ top: position }}
     >
       <button
         role="rowheader"
@@ -253,9 +255,30 @@ export function Grid({
       window.removeEventListener("resize", resize);
     };
   }, []);
-  // Fixed row height keeps the mounted cells bounded even with hundreds of chains.
-  const first = Math.max(0, viewport.row - 3),
-    last = Math.min(indexes.length, viewport.row + viewport.count + 3);
+  const grouped = useMemo(() => {
+    const groups = [
+      ["MONITORING", "Мониторинг"],
+      ["ACTIVITY", "Оценка состояния"],
+      ["SOLUTION", "Растворы"],
+      ["MEDICATION", "Медикаменты"],
+      ["PROCEDURE", "Процедуры"],
+      ["NURSING", "Уход"],
+    ] as const;
+    const known = new Set<string>(groups.map(([type]) => type));
+    const rows: ({ kind: "heading"; label: string; top: number } | { kind: "item"; index: IndexedChain; top: number })[] = [];
+    let top = 0;
+    const add = (label: string, items: IndexedChain[]) => {
+      if (!items.length) return;
+      rows.push({ kind: "heading", label, top }); top += 28;
+      for (const index of items) { rows.push({ kind: "item", index, top }); top += ROW; }
+    };
+    groups.forEach(([type, label]) => add(label, indexes.filter((index) => index.chain.type === type)));
+    add("Без категории", indexes.filter((index) => !known.has(index.chain.type)));
+    return { rows, height: top };
+  }, [indexes]);
+  const visibleRow = grouped.rows.findIndex((_r, i) => (grouped.rows[i + 1]?.top ?? grouped.height) > viewport.row);
+  const first = Math.max(0, (visibleRow < 0 ? grouped.rows.length - 1 : visibleRow) - 3);
+  const last = Math.min(grouped.rows.length, first + viewport.count + 12);
   const width = viewport.nameWidth + ticks.length * GRID_HOUR;
   const fromColumn = Math.max(0, viewport.column - 2),
     toColumn = Math.min(ticks.length, viewport.column + viewport.columns);
@@ -269,7 +292,7 @@ export function Grid({
       aria-label="Сетка результатов: прокрутка по часам и назначениям"
       onScroll={(e) => {
         const el = e.currentTarget;
-        const row = Math.max(0, Math.floor((el.scrollTop - GRID_HEADER) / ROW)),
+        const row = Math.max(0, Math.floor(el.scrollTop - GRID_HEADER)),
           count = Math.ceil(el.clientHeight / ROW) || 12,
           column = Math.max(0, Math.floor(el.scrollLeft / GRID_HOUR)),
           columns = Math.max(
@@ -291,7 +314,7 @@ export function Grid({
       <div
         role="table"
         aria-label="Результаты выполнения назначений"
-        aria-rowcount={indexes.length + 1}
+        aria-rowcount={grouped.rows.length + 1}
         aria-colcount={ticks.length + 1}
         style={
           {
@@ -318,20 +341,11 @@ export function Grid({
             </div>
           ))}
         </div>
-        <div className="grid-body" style={{ height: indexes.length * ROW }}>
-          {indexes.slice(first, last).map((index, i) => (
-            <GridRow
-              key={index.chain.id}
-              index={index}
-              position={first + i}
-              ticks={ticks}
-              end={end}
-              zone={zone}
-              now={now}
-              onSelect={onSelect}
-              fromColumn={fromColumn}
-              toColumn={toColumn}
-            />
+        <div className="grid-body" style={{ height: grouped.height }}>
+          {grouped.rows.slice(first, last).map((row, i) => row.kind === "heading" ? (
+            <div key={`group:${row.label}`} role="row" aria-rowindex={first + i + 2} className="grid-category" style={{ top: row.top }}><span role="rowheader">{row.label}</span></div>
+          ) : (
+            <GridRow key={row.index.chain.id} index={row.index} position={row.top} rowNumber={first + i} ticks={ticks} end={end} zone={zone} now={now} onSelect={onSelect} fromColumn={fromColumn} toColumn={toColumn} />
           ))}
         </div>
       </div>

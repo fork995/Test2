@@ -939,37 +939,14 @@ function Department({
           </>
         ) : tab === "patients" && !selected ? (
           <>
-            <div className="page-title">
-              <h1>Пациенты</h1>
-              {source.entities && branch && departmentId && (
-                <button
-                  className="secondary small"
-                  disabled={!writeEnabled || patientsLoading || refreshingAll}
-                  onClick={() => {
-                    dischargingRef.current = true;
-                    setPatientEntity({});
-                  }}
-                >
-                  + Пациент
-                </button>
-              )}
-              <span className="count-badge">{visible.length}</span>
+            <div className="patient-home-header">
+              <div className="patient-home-brand"><span className="patient-home-paw" aria-hidden="true">🐾</span><span><b>CleverVet Mobile</b><small>СТАЦИОНАР</small></span></div>
+              <div className="patient-home-actions">
+                <button type="button" className="patient-header-button" disabled aria-label="Поиск пока недоступен" title="Поиск пока недоступен">⌕</button>
+                {source.entities && branch && departmentId && <button type="button" className="patient-header-button" aria-label="Добавить пациента" disabled={!writeEnabled || patientsLoading || refreshingAll} onClick={() => { dischargingRef.current = true; setPatientEntity({}); }}>+</button>}
+              </div>
             </div>
-            {selectors}
-            <div className="list-toolbar">
-              <p className="micro">
-                {patientsTime
-                  ? `Получено ${formatTime(patientsTime, zone)}`
-                  : "Выберите отделение"}
-              </p>
-              <button
-                className="secondary small"
-                disabled={patientsLoading || refreshingAll || !departmentId}
-                onClick={() => setPatientsRefresh((n) => n + 1)}
-              >
-                Обновить пациентов
-              </button>
-            </div>
+            <button className="patient-refresh" disabled={patientsLoading || refreshingAll || !departmentId} onClick={() => setPatientsRefresh((n) => n + 1)} aria-label="Обновить пациентов" title="Обновить пациентов">↻</button>
             {unknownPatients.length > 0 && (
               <label className="notice checkbox">
                 <input
@@ -1406,15 +1383,14 @@ function Department({
           tab !== "archive" &&
           (!branch || !departmentId) && (
             <p className="notice">
-              Выберите филиал с отделениями в разделе «Пациенты» или
-              «Настройки».
+              Выберите филиал с отделениями в разделе «Настройки».
             </p>
           )}
       </main>
       <nav className="bottom-nav" aria-label="Основная навигация">
         {(
           [
-            ["patients", "Пациенты", "♧"],
+            ["patients", "Пациенты", "👥"],
             ["general", "Общая лента", "≡"],
             ["archive", "Архив", "▣"],
             ["settings", "Настройки", "⚙"],

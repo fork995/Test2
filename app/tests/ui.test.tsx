@@ -643,10 +643,13 @@ it("existing patient selection, department selector and empty state still work",
   await openDemo();
   await nav("Пациенты");
   expect(container.querySelectorAll(".patient-card")).toHaveLength(2);
+  expect(container.querySelector('[aria-label="Отделение"]')).toBeNull();
+  await nav("Настройки");
   await changeSelect(
     container.querySelector('[aria-label="Отделение"]')!,
     "demo-empty",
   );
+  await nav("Пациенты");
   expect(container.querySelectorAll(".patient-card")).toHaveLength(0);
   expect(container.textContent).toContain(
     "Нет пациентов с подтверждёнными активными картами",

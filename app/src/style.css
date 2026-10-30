@@ -2515,9 +2515,9 @@ a {
   margin-top: 7px;
   overflow: hidden;
   color: #eef5f2;
-  font-size: 15.5px;
+  font-size: 14px;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.25;
   overflow-wrap: anywhere;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -2621,7 +2621,7 @@ a {
   }
   .patient-card-diagnosis {
     min-height: 35px;
-    font-size: 14.5px;
+    font-size: 14px;
   }
   .patient-list .severity-badge {
     padding-inline: 6px;
@@ -2643,3 +2643,16 @@ a {
     font-size: 9px;
   }
 }
+
+/* Patient list header */
+.app:has(.patient-home-header) > .app-header { display: none; }
+.patient-home-header { display:flex; align-items:center; justify-content:space-between; gap:8px; margin: 4px 0 10px; }
+.patient-home-brand { display:flex; align-items:center; gap:10px; min-width:0; }
+.patient-home-brand b { display:block; font-size:18px; white-space:nowrap; }
+.patient-home-brand small { display:block; color:#a8c0bc; font-size:10px; letter-spacing:.12em; }
+.patient-home-paw { display:grid; place-items:center; width:48px; height:48px; flex:none; border-radius:12px; background:#0c3d30; font-size:25px; }
+.patient-home-actions { display:flex; gap:7px; }
+.patient-header-button { width:42px; height:42px; padding:0; border:1px solid #173b37; border-radius:11px; color:#d1e1e0; background:#0a2725; font-size:27px; line-height:1; }
+.patient-refresh { display:block; margin:0 0 5px auto; padding:0 7px; background:transparent; color:#a8c0bc; font-size:17px; }
+.bottom-nav { border-radius:20px 20px 0 0; background:#061c1af5; }
+.bottom-nav button.active { background:#0b4937; color:#8af1c6; }

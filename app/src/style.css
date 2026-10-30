@@ -2638,3 +2638,10 @@ a {
 .patient-card-meta { gap: 0; line-height: 1.4; }
 .patient-meta-part { display:inline-flex; align-items:center; gap:5px; }
 .patient-sex { display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; font-size:15px; line-height:1; }
+
+.patient-card-meta { display:flex; align-items:center; flex-wrap:nowrap; gap:5px; min-width:0; line-height:20px; }
+.patient-meta-part { display:flex; align-items:center; gap:5px; flex:0 0 auto; }
+.patient-gender-icon { display:flex; align-items:center; justify-content:center; flex:0 0 16px; width:16px; height:20px; line-height:0; }
+.patient-gender-icon svg { display:block; width:16px; height:16px; flex-shrink:0; overflow:visible; }
+.patient-count { display:flex; align-items:center; justify-content:center; height:38px; align-self:center; padding:0 10px; border-radius:10px; background:#23473f; color:#b8e8d5; font-size:16px; font-weight:600; }
+@media(max-width:430px) { .patient-home-brand b { font-size:16px; } .patient-home-header, .patient-home-actions { gap:5px; } .patient-home-brand { gap:6px; } .patient-count { padding:0 9px; } }

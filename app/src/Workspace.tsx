@@ -175,6 +175,13 @@ export function Workspace({
     />
   );
 }
+function MaleIcon() {
+  return <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="6" cy="10" r="3.5"/><path d="M8.5 7.5 14 2M10.5 2H14v3.5"/></svg>;
+}
+function FemaleIcon() {
+  return <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="8" cy="5.5" r="3.5"/><path d="M8 9v5.5M5.5 12h5"/></svg>;
+}
+
 function Department({
   source,
   branches,
@@ -942,6 +949,7 @@ function Department({
             <div className="patient-home-header">
               <div className="patient-home-brand"><span className="patient-home-paw" aria-hidden="true"><svg viewBox="0 0 48 48" width="34" height="34" fill="currentColor"><ellipse cx="24" cy="31" rx="12" ry="9"/><ellipse cx="10" cy="19" rx="5" ry="7" transform="rotate(-25 10 19)"/><ellipse cx="19" cy="12" rx="5" ry="7"/><ellipse cx="30" cy="12" rx="5" ry="7"/><ellipse cx="39" cy="19" rx="5" ry="7" transform="rotate(25 39 19)"/></svg></span><span><b>CleverVet Mobile</b><small>СТАЦИОНАР</small></span></div>
               <div className="patient-home-actions">
+                <span className="patient-count" aria-label={`Пациентов: ${patientsLoading || patientsError || !departmentId ? "данные недоступны" : active.length}`}>{patientsLoading || patientsError || !departmentId ? "…" : active.length}</span>
                 <button type="button" className="patient-header-button" disabled aria-label="Поиск пока недоступен" title="Поиск пока недоступен">⌕</button>
                 {source.entities && branch && departmentId && <button type="button" className="patient-header-button" aria-label="Добавить пациента" disabled={!writeEnabled || patientsLoading || refreshingAll} onClick={() => { dischargingRef.current = true; setPatientEntity({}); }}>+</button>}
               </div>
@@ -977,12 +985,7 @@ function Department({
                     failed: data?.phase === "error" && !data?.hasData,
                   };
                 });
-                const sex =
-                  p.gender === "MALE"
-                    ? "♂"
-                    : p.gender === "FEMALE"
-                      ? "♀"
-                      : "";
+                const meta = [p.species && "species", (p.gender === "MALE" || p.gender === "FEMALE") && "gender", p.weight && "weight"].filter(Boolean);
                 return (
                   <article className="patient-tile" key={p.id}>
                     <button
@@ -997,7 +1000,7 @@ function Department({
                       <span className="patient-card-body">
                         <strong className="patient-card-name">{p.name}</strong>
                         <span className="patient-card-meta">
-                          {([p.species, sex, p.weight ? `${p.weight} кг` : ""].filter(Boolean).length ? [p.species, sex, p.weight ? `${p.weight} кг` : ""].filter(Boolean) : ["Данные не указаны"]).map((part, i) => <span className="patient-meta-part" key={i}>{i > 0 && <span aria-hidden="true"> · </span>}<span className={part === sex && sex ? "patient-sex" : undefined}>{part}</span></span>)}
+                          {meta.length ? meta.map((part, i) => <span className="patient-meta-part" key={String(part)}>{i > 0 && <span className="patient-separator" aria-hidden="true">·</span>}{part === "gender" ? <span className="patient-gender-icon" role="img" aria-label={p.gender === "MALE" ? "Самец" : "Самка"}>{p.gender === "MALE" ? <MaleIcon /> : <FemaleIcon />}</span> : <span>{part === "species" ? p.species : `${p.weight} кг`}</span>}</span>) : "Данные не указаны"}
                         </span>
                         <span
                           className={`patient-card-diagnosis${p.diagnoses ? "" : " is-empty"}`}

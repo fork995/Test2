@@ -666,7 +666,7 @@ it("patient list uses compact two-column card content and opens existing actions
     "Барс",
   );
   expect(first.querySelector(".patient-card-meta")?.textContent).toBe(
-    "Кошка · ♂ · 4.2 кг",
+    "Кошка··4.2 кг",
   );
   expect(first.querySelector(".patient-card-diagnosis")?.textContent).toContain(
     "восстановление",

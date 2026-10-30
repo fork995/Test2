@@ -652,6 +652,41 @@ it("existing patient selection, department selector and empty state still work",
     "Нет пациентов с подтверждёнными активными картами",
   );
 });
+it("patient list uses compact two-column card content and opens existing actions from ellipsis", async () => {
+  await openDemo();
+  await nav("Пациенты");
+  const tiles = [...container.querySelectorAll<HTMLElement>(".patient-tile")];
+  expect(tiles).toHaveLength(2);
+  const first = tiles[0];
+  expect(first.querySelector(".patient-card-photo .patient-photo img")).not.toBeNull();
+  expect(first.querySelector(".patient-card-name")?.textContent).toContain(
+    "Барс",
+  );
+  expect(first.querySelector(".patient-card-meta")?.textContent).toBe(
+    "Кошка · ♂ · 4.2 кг",
+  );
+  expect(first.querySelector(".patient-card-diagnosis")?.textContent).toContain(
+    "восстановление",
+  );
+  expect(first.querySelector(".patient-card-severity .severity-badge")).not.toBeNull();
+  expect(first.querySelector(".patient-card-counters")?.textContent).toContain(
+    "Сейчас:",
+  );
+  expect(first.querySelector(".patient-card-counters")?.textContent).toContain(
+    "След. час:",
+  );
+  expect(first.textContent).not.toMatch(/Владелец|Клетка|Метис/);
+  expect(tiles[1].querySelector(".patient-photo img")).toBeNull();
+  expect(tiles[1].querySelector(".patient-card-diagnosis.is-empty")).not.toBeNull();
+
+  await click(first.querySelector(".patient-card-menu")!);
+  expect(container.querySelector(".patient-heading h1")?.textContent).toContain(
+    "Барс",
+  );
+  expect(container.querySelector<HTMLDetailsElement>(".patient-actions")?.open).toBe(
+    true,
+  );
+});
 it("loaded medical records are reused through all view/tab switches and scrolling", async () => {
   const calls = realMock();
   await connect();
@@ -870,7 +905,7 @@ it("rounded zero-window assignment moves from next hour to done and the patient 
   const counters = container.querySelector(
     '.patient-card [aria-label="Почасовая сводка"]',
   )!;
-  expect(counters.textContent).toContain("11:00 · 1");
+  expect(counters.textContent).toContain("След. час: 1");
   expect(counters.querySelector('[data-status="planned"]')).not.toBeNull();
   await nav("Общая лента");
   expect(calls.length).toBe(beforeNavigation);
@@ -889,7 +924,7 @@ it("rounded zero-window assignment moves from next hour to done and the patient 
   await nav("Пациенты");
   expect(
     container.querySelector('.patient-card [data-status="done"]')?.textContent,
-  ).toContain("11:00 · ✓");
+  ).toContain("След. час: 0");
   expect(calls.length).toBe(beforeSecondNavigation);
 });
 

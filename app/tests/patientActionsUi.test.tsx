@@ -219,14 +219,17 @@ it.each(Object.entries(SEVERITIES))(
     ).toBe(expected.label);
   },
 );
-it("shows owner below diagnosis in both views without extra personal fields", async () => {
+it("omits owner from compact cards but keeps it below diagnosis in patient details", async () => {
   await mount();
-  const owner = container.querySelector(".patient-owner")!;
-  expect(owner.previousElementSibling?.className).toBe("diagnosis");
-  expect(owner.textContent).toBe("Владелец: Учебная Анна Вымышленная");
+  expect(container.querySelector(".patient-card .patient-owner")).toBeNull();
+  expect(container.querySelector(".patient-card")?.textContent).not.toContain(
+    "Учебная Анна Вымышленная",
+  );
   expect(container.textContent).not.toMatch(/HIDDEN_PHONE|HIDDEN_EMAIL/);
   await openPatient();
-  expect(container.querySelector(".patient-owner")!.textContent).toContain(
+  const owner = container.querySelector(".patient-owner")!;
+  expect(owner.previousElementSibling?.className).toBe("diagnosis");
+  expect(owner.textContent).toContain(
     "Учебная Анна Вымышленная",
   );
 });

@@ -238,6 +238,7 @@ function Department({
   }, [source, writeEnabled]);
   const [tab, setTab] = useState<Tab>(initialTab ?? "general"),
     [selected, setSelected] = useState<Patient | null>(null),
+    [patientActionsOpen, setPatientActionsOpen] = useState(false),
     [mode, setMode] = useState<"feed" | "grid">("feed");
   const [patients, setPatients] = useState<Patient[]>([]),
     [patientsLoading, setPatientsLoading] = useState(true),
@@ -365,8 +366,9 @@ function Department({
       setSelection({ ...s, patient: s.patient ?? selected ?? undefined }),
     [selected],
   );
-  const openPatient = (p: Patient) => {
+  const openPatient = (p: Patient, openActions = false) => {
     setSelected(p);
+    setPatientActionsOpen(openActions);
     setMode("feed");
     setHistory(false);
     setTab("patients");
@@ -374,8 +376,10 @@ function Department({
   };
   const changeTab = (next: Tab) => {
     setSelection(null);
-    if (next === "general") setSelected(null);
-    if (next === "patients") setSelected(null);
+    if (next === "general" || next === "patients") {
+      setSelected(null);
+      setPatientActionsOpen(false);
+    }
     setTab(next);
   };
   const selectedData = selected ? snapshot.get(selected.cardId) : undefined;
@@ -978,65 +982,93 @@ function Department({
               </label>
             )}
             <div className="patient-list">
-              {visible.map((p) => (
-                <button
-                  className="patient-card"
-                  key={p.id}
-                  onClick={() => openPatient(p)}
-                >
-                  <div className="patient-card-top">
-                    <PatientPhoto patient={p} demo={source.demo} />
-                    <div>
-                      <h2>{p.name}</h2>
-                      <p>
-                        {[p.species, p.breed].filter(Boolean).join(" · ") ||
-                          "Вид и порода не указаны"}
-                      </p>
-                    </div>
-                    <span className="chevron">›</span>
-                  </div>
-                  <div className="tags">
-                    <span>
-                      {p.weight ? `${p.weight} кг` : "Масса не указана"}
-                    </span>
-                    {p.cage && <span>Клетка {p.cage}</span>}
-                    <SeverityBadge value={p.severity} />
-                  </div>
-                  <div className="tags" aria-label="Почасовая сводка">
-                    {[0, 1].map((offset) => {
-                      const at = currentHourStart(now, zone) + offset * HOUR;
-                      const schedule = patientSchedules.get(p.cardId);
-                      const data = snapshot.get(p.cardId);
-                      const summary = schedule
-                        ? summaryForHour(schedule, at, now, zone)
-                        : null;
-                      const partial =
-                        !schedule?.complete || data?.phase !== "ready";
-                      return (
-                        <span
-                          key={at}
-                          data-status={summary?.status ?? "loading"}
-                        >
-                          {formatTime(at, zone)} ·{" "}
-                          {summary
-                            ? `${summary.status === "done" ? "✓" : summary.status === "nothing" ? "—" : summary.unmarked}${partial ? " ⚠" : ""}`
-                            : "…"}
+              {visible.map((p) => {
+                const counters = [0, 1].map((offset) => {
+                  const at = currentHourStart(now, zone) + offset * HOUR;
+                  const schedule = patientSchedules.get(p.cardId);
+                  const data = snapshot.get(p.cardId);
+                  const summary = schedule
+                    ? summaryForHour(schedule, at, now, zone)
+                    : null;
+                  return {
+                    at,
+                    label: offset === 0 ? "Сейчас" : "След. час",
+                    icon: offset === 0 ? "⌁" : "◷",
+                    status: summary?.status ?? "loading",
+                    value: summary ? summary.unmarked : null,
+                    partial: !schedule?.complete || data?.phase !== "ready",
+                  };
+                });
+                const sex =
+                  p.gender === "MALE"
+                    ? "♂"
+                    : p.gender === "FEMALE"
+                      ? "♀"
+                      : "";
+                return (
+                  <article className="patient-tile" key={p.id}>
+                    <button
+                      type="button"
+                      className="patient-card"
+                      aria-label={`Открыть карту пациента ${p.name}`}
+                      onClick={() => openPatient(p)}
+                    >
+                      <span className="patient-card-photo">
+                        <PatientPhoto patient={p} demo={source.demo} />
+                      </span>
+                      <span className="patient-card-body">
+                        <strong className="patient-card-name">{p.name}</strong>
+                        <span className="patient-card-meta">
+                          {[p.species, sex, p.weight ? `${p.weight} кг` : ""]
+                            .filter(Boolean)
+                            .join(" · ") || "Данные не указаны"}
                         </span>
-                      );
-                    })}
-                  </div>
-                  {p.diagnoses && <p className="diagnosis">{p.diagnoses}</p>}
-                  {p.ownerName && (
-                    <p className="patient-owner">Владелец: {p.ownerName}</p>
-                  )}
-                  {cardState(p) === "unknown" && (
-                    <p className="micro warning">
-                      Активность карты не подтверждена ·{" "}
-                      {p.cardStatus || "status отсутствует"}
-                    </p>
-                  )}
-                </button>
-              ))}
+                        <span
+                          className={`patient-card-diagnosis${p.diagnoses ? "" : " is-empty"}`}
+                        >
+                          {p.diagnoses}
+                        </span>
+                        <span className="patient-card-severity">
+                          <SeverityBadge value={p.severity} />
+                        </span>
+                        <span
+                          className="patient-card-counters"
+                          aria-label="Почасовая сводка"
+                        >
+                          {counters.map((counter, offset) => (
+                            <span
+                              className={
+                                offset === 0
+                                  ? "patient-hour-now"
+                                  : "patient-hour-next"
+                              }
+                              key={counter.at}
+                              data-status={counter.status}
+                            >
+                              <span className="patient-hour-icon" aria-hidden="true">
+                                {counter.icon}
+                              </span>
+                              <span>{counter.label}: </span>
+                              <b>
+                                {counter.value === null ? "…" : counter.value}
+                                {counter.partial ? " ⚠" : ""}
+                              </b>
+                            </span>
+                          ))}
+                        </span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      className="patient-card-menu"
+                      aria-label={`Действия с пациентом ${p.name}`}
+                      onClick={() => openPatient(p, true)}
+                    >
+                      •••
+                    </button>
+                  </article>
+                );
+              })}
             </div>
             {!patientsLoading &&
               !patientsError &&
@@ -1051,7 +1083,10 @@ function Department({
           <>
             <button
               className="secondary small back"
-              onClick={() => setSelected(null)}
+              onClick={() => {
+                setSelected(null);
+                setPatientActionsOpen(false);
+              }}
             >
               ‹ Пациенты
             </button>
@@ -1095,7 +1130,13 @@ function Department({
               <p className="patient-owner">Владелец: {selected.ownerName}</p>
             )}
             {source.discharge && cardState(selected) === "active" && (
-              <details className="patient-actions">
+              <details
+                className="patient-actions"
+                open={patientActionsOpen}
+                onToggle={(event) =>
+                  setPatientActionsOpen(event.currentTarget.open)
+                }
+              >
                 <summary>Действия с пациентом</summary>
                 <p className="micro">
                   Завершение лечения выполняется отдельно от отметок назначений.

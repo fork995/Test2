@@ -2428,3 +2428,218 @@ a {
   outline: 3px solid var(--green);
   outline-offset: 3px;
 }
+
+/* Patient list: approved compact two-column emerald cards. */
+.patient-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+.patient-tile {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #17453f;
+  border-radius: 16px;
+  background: #082724;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 14%);
+}
+.patient-list .patient-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #f0f6f3;
+  text-align: left;
+}
+.patient-list .patient-card:active {
+  background: #0d322e;
+}
+.patient-card-photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  overflow: hidden;
+  background: #173c36;
+}
+.patient-list .patient-photo {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 2 / 1;
+  border-radius: 0;
+  background: #173c36;
+  color: #b9ead2;
+  font-size: clamp(28px, 9vw, 44px);
+}
+.patient-list .patient-photo img {
+  object-fit: cover;
+}
+.patient-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: 8px 10px 10px;
+}
+.patient-card-name {
+  display: block;
+  overflow: hidden;
+  color: #f5f8f6;
+  font-size: 18px;
+  font-weight: 750;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.patient-card-meta {
+  display: block;
+  min-width: 0;
+  margin-top: 4px;
+  overflow: hidden;
+  color: #a8c0bc;
+  font-size: 12px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.patient-card-diagnosis {
+  display: -webkit-box;
+  min-height: 38px;
+  margin-top: 7px;
+  overflow: hidden;
+  color: #eef5f2;
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.patient-card-diagnosis.is-empty {
+  visibility: hidden;
+}
+.patient-card-severity {
+  display: block;
+  min-height: 27px;
+  margin-top: 6px;
+}
+.patient-list .severity-badge {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 24px;
+  overflow: hidden;
+  padding: 3px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.patient-card-counters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  min-width: 0;
+  margin-top: auto;
+  padding-top: 8px;
+}
+.patient-card-counters > span {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 30px;
+  overflow: hidden;
+  gap: 1px;
+  padding: 4px 3px;
+  border-radius: 9px;
+  color: #e6eeee;
+  font-size: 8.5px;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.patient-hour-now {
+  background: #52282f;
+}
+.patient-hour-next {
+  background: #17354b;
+}
+.patient-hour-icon {
+  flex: 0 0 auto;
+  margin-right: 0;
+  color: #ff899c;
+  font-size: 10px;
+  line-height: 1;
+}
+.patient-hour-next .patient-hour-icon {
+  color: #61bff2;
+}
+.patient-card-counters b {
+  margin-left: 0;
+  font-size: 11px;
+}
+.patient-card-menu {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  z-index: 2;
+  display: grid;
+  width: 34px;
+  min-width: 34px;
+  height: 32px;
+  min-height: 32px;
+  place-items: center;
+  padding: 0 0 5px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 10px;
+  background: rgb(7 19 18 / 78%);
+  color: #f0f6f3;
+  font-size: 15px;
+  letter-spacing: 1px;
+  backdrop-filter: blur(8px);
+}
+@media (max-width: 360px) {
+  .patient-list {
+    gap: 8px;
+  }
+  .patient-card-body {
+    padding: 7px 7px 8px;
+  }
+  .patient-card-name {
+    font-size: 17px;
+  }
+  .patient-card-meta {
+    font-size: 10.5px;
+  }
+  .patient-card-diagnosis {
+    min-height: 35px;
+    font-size: 14.5px;
+  }
+  .patient-list .severity-badge {
+    padding-inline: 6px;
+    font-size: 9.5px;
+  }
+  .patient-card-counters {
+    gap: 4px;
+  }
+  .patient-card-counters > span {
+    min-height: 28px;
+    gap: 1px;
+    padding-inline: 2px;
+    font-size: 7.5px;
+  }
+  .patient-hour-icon {
+    font-size: 9px;
+  }
+  .patient-card-counters b {
+    font-size: 9px;
+  }
+}

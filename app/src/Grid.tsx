@@ -195,6 +195,38 @@ export function Grid({
     nameWidth: 110,
   });
   const container = useRef<HTMLDivElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const initialHour = useRef(now);
+  useEffect(() => {
+    const el = container.current;
+    if (!el || !ticks.length) return;
+    const column = Math.max(0, Math.min(ticks.length - 1, Math.floor((initialHour.current - ticks[0]) / HOUR)));
+    el.scrollLeft = Math.max(0, (column - 1) * GRID_HOUR);
+    setViewport((v) => ({ ...v, column: Math.floor(el.scrollLeft / GRID_HOUR) }));
+  }, []);
+  useEffect(() => {
+    const el = container.current;
+    if (!el) return;
+    let x = 0, y = 0, origin = 0, direction = "";
+    const startTouch = (e: TouchEvent) => {
+      if (e.touches.length !== 1) { direction = "cancel"; return; }
+      x = e.touches[0].clientX; y = e.touches[0].clientY;
+      origin = el.scrollLeft; direction = "";
+    };
+    const moveTouch = (e: TouchEvent) => {
+      if (e.touches.length !== 1 || direction === "cancel") return;
+      const dx = e.touches[0].clientX - x, dy = e.touches[0].clientY - y;
+      if (!direction && Math.max(Math.abs(dx), Math.abs(dy)) > 8)
+        direction = Math.abs(dx) > Math.abs(dy) * 1.2 ? "horizontal" : "vertical";
+      if (direction === "horizontal" && e.cancelable) {
+        e.preventDefault();
+        el.scrollLeft = origin - dx * 0.7;
+      }
+    };
+    el.addEventListener("touchstart", startTouch, { passive: true });
+    el.addEventListener("touchmove", moveTouch, { passive: false });
+    return () => { el.removeEventListener("touchstart", startTouch); el.removeEventListener("touchmove", moveTouch); };
+  }, []);
   useEffect(() => {
     const el = container.current;
     if (!el) return;
@@ -228,6 +260,8 @@ export function Grid({
   const fromColumn = Math.max(0, viewport.column - 2),
     toColumn = Math.min(ticks.length, viewport.column + viewport.columns);
   return (
+    <div className={`grid-frame${expanded ? " grid-frame-expanded" : ""}`}>
+      <div className="grid-toolbar"><button type="button" className="grid-expand" aria-label={expanded ? "Свернуть сетку" : "Расширить сетку"} onClick={() => setExpanded((v) => !v)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{expanded ? <path d="M4 9h5V4M20 15h-5v5M9 9 3 3M15 15l6 6"/> : <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>}</svg></button></div>
     <div
       ref={container}
       className="grid-scroll"
@@ -301,6 +335,7 @@ export function Grid({
           ))}
         </div>
       </div>
+    </div>
     </div>
   );
 }

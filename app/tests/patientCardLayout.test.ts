@@ -18,9 +18,9 @@ it("keeps the approved two-column patient-card layout on narrow iPhones", () => 
   expect(css).not.toMatch(/\.patient-(?:list|tile|card)[^{]*\{[^}]*transform:\s*scale/s);
 });
 
-it("keeps card counters horizontal and the menu over the photo", () => {
+it("keeps card counters vertical and the menu over the photo", () => {
   expect(css).toMatch(
-    /\.patient-card-counters\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/s,
+    /\.patient-card-counters\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/s,
   );
   expect(css).toMatch(
     /\.patient-card-counters\s*>\s*span\s*\{[^}]*white-space:\s*nowrap/s,

@@ -974,6 +974,7 @@ function Department({
                     status: summary?.status ?? "loading",
                     value: summary ? summary.unmarked : null,
                     partial: !schedule?.complete || data?.phase !== "ready",
+                    failed: data?.phase === "error" && !data?.hasData,
                   };
                 });
                 const sex =
@@ -996,7 +997,7 @@ function Department({
                       <span className="patient-card-body">
                         <strong className="patient-card-name">{p.name}</strong>
                         <span className="patient-card-meta">
-                          {([p.species, sex, p.weight ? `${p.weight} кг` : ""].filter(Boolean).length ? [p.species, sex, p.weight ? `${p.weight} кг` : ""].filter(Boolean) : ["Данные не указаны"]).map((part, i) => <span className="patient-meta-part" key={i}>{i > 0 && <span aria-hidden="true"> · </span>}{part}</span>)}
+                          {([p.species, sex, p.weight ? `${p.weight} кг` : ""].filter(Boolean).length ? [p.species, sex, p.weight ? `${p.weight} кг` : ""].filter(Boolean) : ["Данные не указаны"]).map((part, i) => <span className="patient-meta-part" key={i}>{i > 0 && <span aria-hidden="true"> · </span>}<span className={part === sex && sex ? "patient-sex" : undefined}>{part}</span></span>)}
                         </span>
                         <span
                           className={`patient-card-diagnosis${p.diagnoses ? "" : " is-empty"}`}
@@ -1025,9 +1026,9 @@ function Department({
                               </span>
                               <span>{counter.label}: </span>
                               <b>
-                                {counter.value === null ? "…" : counter.value}
-                                {counter.partial ? " ⚠" : ""}
+                                {counter.failed ? "Ошибка" : counter.value === null ? "…" : counter.value}
                               </b>
+                              {counter.partial && <span className="patient-counter-warning" aria-label="Данные неполные">⚠</span>}
                             </span>
                           ))}
                         </span>

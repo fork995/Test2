@@ -2545,27 +2545,15 @@ a {
 }
 .patient-card-counters {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  width: 100%;
   min-width: 0;
   margin-top: auto;
-  padding-top: 8px;
+  padding-top: 10px;
 }
-.patient-card-counters > span {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  min-height: 30px;
-  overflow: hidden;
-  gap: 1px;
-  padding: 4px 3px;
-  border-radius: 9px;
-  color: #e6eeee;
-  font-size: 8.5px;
-  letter-spacing: -0.01em;
-  line-height: 1;
-  white-space: nowrap;
-}
+.patient-card-counters > span { display:flex; align-items:center; gap:6px; width:100%; min-width:0; min-height:36px; padding:8px 10px; box-sizing:border-box; border-radius:9px; color:#e6eeee; font-size:12px; line-height:1.2; white-space:nowrap; }
+.patient-counter-warning { margin-left:auto; }
 .patient-hour-now {
   background: #52282f;
 }
@@ -2627,21 +2615,7 @@ a {
     padding-inline: 6px;
     font-size: 9.5px;
   }
-  .patient-card-counters {
-    gap: 4px;
-  }
-  .patient-card-counters > span {
-    min-height: 28px;
-    gap: 1px;
-    padding-inline: 2px;
-    font-size: 7.5px;
-  }
-  .patient-hour-icon {
-    font-size: 9px;
-  }
-  .patient-card-counters b {
-    font-size: 9px;
-  }
+
 }
 
 /* Patient list header */
@@ -2660,3 +2634,7 @@ a {
 .patient-home-paw { color: #a7f3d0; }
 .patient-card-meta { display: flex; align-items: center; line-height: 1.3; white-space: nowrap; }
 .patient-meta-part { flex: 0 0 auto; }
+
+.patient-card-meta { gap: 0; line-height: 1.4; }
+.patient-meta-part { display:inline-flex; align-items:center; gap:5px; }
+.patient-sex { display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; font-size:15px; line-height:1; }

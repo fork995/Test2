@@ -168,20 +168,6 @@ export function App() {
   }, [logout, session?.expiresAt]);
   return (
     <div className="app">
-      <header className="app-header">
-        <div className="brand">
-          <span className="brand-icon" aria-hidden="true">
-            CV
-          </span>
-          <div>
-            <b>
-              CleverVet <span className="brand-light">Mobile</span>
-            </b>
-            <small>СТАЦИОНАР · v0.5.1</small>
-          </div>
-        </div>
-        <span className="read-badge">Просмотр / отметки</span>
-      </header>
       {restoreState.status === "restoring" ? (
         <main className="connect-page">
           <section className="panel connect-card" role="status">

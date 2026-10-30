@@ -940,7 +940,7 @@ function Department({
         ) : tab === "patients" && !selected ? (
           <>
             <div className="patient-home-header">
-              <div className="patient-home-brand"><span className="patient-home-paw" aria-hidden="true">🐾</span><span><b>CleverVet Mobile</b><small>СТАЦИОНАР</small></span></div>
+              <div className="patient-home-brand"><span className="patient-home-paw" aria-hidden="true"><svg viewBox="0 0 48 48" width="34" height="34" fill="currentColor"><ellipse cx="24" cy="31" rx="12" ry="9"/><ellipse cx="10" cy="19" rx="5" ry="7" transform="rotate(-25 10 19)"/><ellipse cx="19" cy="12" rx="5" ry="7"/><ellipse cx="30" cy="12" rx="5" ry="7"/><ellipse cx="39" cy="19" rx="5" ry="7" transform="rotate(25 39 19)"/></svg></span><span><b>CleverVet Mobile</b><small>СТАЦИОНАР</small></span></div>
               <div className="patient-home-actions">
                 <button type="button" className="patient-header-button" disabled aria-label="Поиск пока недоступен" title="Поиск пока недоступен">⌕</button>
                 {source.entities && branch && departmentId && <button type="button" className="patient-header-button" aria-label="Добавить пациента" disabled={!writeEnabled || patientsLoading || refreshingAll} onClick={() => { dischargingRef.current = true; setPatientEntity({}); }}>+</button>}
@@ -996,9 +996,7 @@ function Department({
                       <span className="patient-card-body">
                         <strong className="patient-card-name">{p.name}</strong>
                         <span className="patient-card-meta">
-                          {[p.species, sex, p.weight ? `${p.weight} кг` : ""]
-                            .filter(Boolean)
-                            .join(" · ") || "Данные не указаны"}
+                          {([p.species, sex, p.weight ? `${p.weight} кг` : ""].filter(Boolean).length ? [p.species, sex, p.weight ? `${p.weight} кг` : ""].filter(Boolean) : ["Данные не указаны"]).map((part, i) => <span className="patient-meta-part" key={i}>{i > 0 && <span aria-hidden="true"> · </span>}{part}</span>)}
                         </span>
                         <span
                           className={`patient-card-diagnosis${p.diagnoses ? "" : " is-empty"}`}

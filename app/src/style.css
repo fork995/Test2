@@ -2645,7 +2645,7 @@ a {
 }
 
 /* Patient list header */
-.app:has(.patient-home-header) > .app-header { display: none; }
+
 .patient-home-header { display:flex; align-items:center; justify-content:space-between; gap:8px; margin: 4px 0 10px; }
 .patient-home-brand { display:flex; align-items:center; gap:10px; min-width:0; }
 .patient-home-brand b { display:block; font-size:18px; white-space:nowrap; }
@@ -2656,3 +2656,7 @@ a {
 .patient-refresh { display:block; margin:0 0 5px auto; padding:0 7px; background:transparent; color:#a8c0bc; font-size:17px; }
 .bottom-nav { border-radius:20px 20px 0 0; background:#061c1af5; }
 .bottom-nav button.active { background:#0b4937; color:#8af1c6; }
+
+.patient-home-paw { color: #a7f3d0; }
+.patient-card-meta { display: flex; align-items: center; line-height: 1.3; white-space: nowrap; }
+.patient-meta-part { flex: 0 0 auto; }

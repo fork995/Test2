@@ -965,9 +965,9 @@ function Department({
                 <span className="patient-count" aria-label={`Пациентов: ${patientsLoading || patientsError || !departmentId ? "данные недоступны" : active.length}`}>{patientsLoading || patientsError || !departmentId ? "…" : active.length}</span>
                 <button type="button" className="patient-header-button" disabled aria-label="Поиск пока недоступен" title="Поиск пока недоступен">⌕</button>
                 {source.entities && branch && departmentId && <button type="button" className="patient-header-button" aria-label="Добавить пациента" disabled={!writeEnabled || patientsLoading || refreshingAll} onClick={() => { dischargingRef.current = true; setPatientEntity({}); }}>+</button>}
+                <button className="patient-refresh" disabled={patientsLoading || refreshingAll || !departmentId} onClick={() => setPatientsRefresh((n) => n + 1)} aria-label="Обновить пациентов" title="Обновить пациентов">↻</button>
               </div>
             </div>
-            <button className="patient-refresh" disabled={patientsLoading || refreshingAll || !departmentId} onClick={() => setPatientsRefresh((n) => n + 1)} aria-label="Обновить пациентов" title="Обновить пациентов">↻</button>
             {unknownPatients.length > 0 && (
               <label className="notice checkbox">
                 <input
@@ -1410,14 +1410,14 @@ function Department({
             ["archive", "Архив", "▣"],
             ["settings", "Настройки", "⚙"],
           ] as const
-        ).map(([value, label, icon]) => (
+        ).map(([value, label]) => (
           <button
             key={value}
             className={tab === value ? "active" : ""}
             aria-current={tab === value ? "page" : undefined}
             onClick={() => changeTab(value)}
           >
-            <span aria-hidden="true">{icon}</span>
+            <span aria-hidden="true" className="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{value === "patients" ? <><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5v1"/></> : value === "general" ? <><path d="M9 5h12M9 12h12M9 19h12"/><circle cx="4" cy="5" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="19" r="1"/></> : value === "archive" ? <><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></> : <><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.4 1a7 7 0 0 0-1.7-1L14.5 3h-5l-.3 3.1a7 7 0 0 0-1.7 1l-2.4-1-2 3.4L5 11a7 7 0 0 0 0 2l-1.9 1.5 2 3.4 2.4-1a7 7 0 0 0 1.7 1l.3 3.1h5l.3-3.1a7 7 0 0 0 1.7-1l2.4 1 2-3.4L19 13a7 7 0 0 0 0-1Z"/></>}</svg></span>
             {label}
             {value === "settings" && warningCount > 0 && (
               <small

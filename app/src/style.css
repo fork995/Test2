@@ -2694,3 +2694,23 @@ a {
 .grid-frame-expanded .grid-toolbar { top:env(safe-area-inset-top); right:max(4px,env(safe-area-inset-right)); height:44px; }
 .grid-frame-expanded .grid-expand { width:44px; height:44px; }
 .grid-frame.grid-frame-expanded { position:fixed; }
+
+/* Patient list visual treatment */
+.patient-home-header { gap:4px; margin:4px 0 8px; }
+.patient-home-brand { gap:6px; flex:1 1 auto; min-width:0; }
+.patient-home-brand b { font-size:clamp(12px, 3.5vw, 16px); overflow:hidden; text-overflow:ellipsis; }
+.patient-home-paw { width:40px; height:44px; }
+.patient-home-actions { flex:0 0 auto; gap:3px; }
+.patient-home-actions .patient-header-button, .patient-home-actions .patient-refresh { display:grid; place-items:center; width:44px; min-width:44px; height:44px; min-height:44px; margin:0; padding:0; border:1px solid #173b37; border-radius:11px; background:#0a2725; color:#d1e1e0; }
+.patient-home-actions .patient-refresh { font-size:22px; }
+.patient-home-actions .patient-count { padding:0 8px; }
+.patient-tile { background:linear-gradient(155deg,#103c35,#082521 72%,#071e1c); border-color:#37685b; box-shadow:0 4px 16px #0003, 0 0 8px #62d4ae14; }
+.patient-card-photo { position:relative; }
+.patient-card-photo::after { content:""; position:absolute; bottom:0; left:0; right:0; height:18px; pointer-events:none; background:linear-gradient(transparent,#0a2a25a0); }
+.patient-hour-now { background:linear-gradient(135deg,#63333c,#452329); box-shadow:inset 0 0 0 1px #c9838b33; }
+.patient-hour-next { background:linear-gradient(135deg,#22475e,#122f43); box-shadow:inset 0 0 0 1px #78b8d533; }
+.bottom-nav { padding:3px max(8px,env(safe-area-inset-right)) max(2px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left)); background:#061c1aeF; -webkit-backdrop-filter:blur(14px); }
+.bottom-nav button { position:relative; min-height:44px; padding:2px 2px 5px; gap:1px; font-size:10px; }
+.bottom-nav button > span { font-size:18px; }
+.bottom-nav button.active { background:transparent; color:#8af1c6; text-shadow:0 0 9px #77e5ba55; }
+.bottom-nav button.active::after { content:""; position:absolute; bottom:1px; width:28px; height:2px; border-radius:2px; background:#8af1c6; box-shadow:0 0 7px #8af1c699; }

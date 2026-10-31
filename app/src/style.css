@@ -595,7 +595,7 @@ a {
 .grid-row {
   position: absolute;
   left: 0;
-  height: 52px;
+  height: 44px;
 }
 .grid-row button {
   border-radius: 0;
@@ -2683,3 +2683,14 @@ a {
 .compact-feed-patient { margin-top:5px; }
 
 .general-feed-heading .feed-refresh { margin:0 8px 0 auto; min-width:44px; min-height:44px; }
+
+/* Patient grid dimensions and floating control. */
+.grid-frame { position:relative; }
+.grid-scroll { touch-action:pinch-zoom; }
+.grid-row button { padding:2px; }
+.grid-toolbar { position:absolute; top:0; right:0; z-index:9; margin:0; }
+.grid-expand { width:44px; height:44px; min-width:44px; min-height:44px; color:#e1eeea; border:1px solid #ffffff55; background:#10221dc9; box-shadow:0 3px 12px #0008; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+.grid-frame-expanded { padding:env(safe-area-inset-top) max(4px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(4px,env(safe-area-inset-left)); }
+.grid-frame-expanded .grid-toolbar { top:env(safe-area-inset-top); right:max(4px,env(safe-area-inset-right)); height:44px; }
+.grid-frame-expanded .grid-expand { width:44px; height:44px; }
+.grid-frame.grid-frame-expanded { position:fixed; }

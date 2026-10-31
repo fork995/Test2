@@ -3,6 +3,7 @@ import { it, expect, beforeEach, afterEach, vi } from "vitest";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { App } from "../src/App";
+import { GRID_HOUR } from "../src/Grid";
 import { workChains } from "./workFixtures";
 import { T, rawPatients, rawChains, branches } from "./fixtures";
 let root: Root, container: HTMLDivElement;
@@ -951,7 +952,7 @@ it("a 48-hour actual sheet is available in the grid with horizontal virtualizati
   ).toBe("49");
   const scroll = container.querySelector(".grid-scroll")!;
   await act(async () => {
-    scroll.scrollLeft = 24 * 56;
+    scroll.scrollLeft = 24 * GRID_HOUR;
     scroll.dispatchEvent(new Event("scroll", { bubbles: true }));
   });
   expect(container.querySelector(".hour-cell.done")).not.toBeNull();

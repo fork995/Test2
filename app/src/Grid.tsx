@@ -27,8 +27,8 @@ export interface Selection {
   at?: number;
   entries?: Entry[];
 }
-export const GRID_ROW = 52,
-  GRID_HOUR = 56,
+export const GRID_ROW = 44,
+  GRID_HOUR = 45,
   GRID_HEADER = 40;
 const ROW = GRID_ROW;
 const GridRow = memo(function GridRow({
@@ -209,25 +209,29 @@ export function Grid({
   useEffect(() => {
     const el = container.current;
     if (!el) return;
-    let x = 0, y = 0, origin = 0, direction = "";
+    let x = 0, y = 0, originX = 0, originY = 0, direction = "";
     const startTouch = (e: TouchEvent) => {
       if (e.touches.length !== 1) { direction = "cancel"; return; }
       x = e.touches[0].clientX; y = e.touches[0].clientY;
-      origin = el.scrollLeft; direction = "";
+      originX = el.scrollLeft; originY = el.scrollTop; direction = "";
     };
     const moveTouch = (e: TouchEvent) => {
       if (e.touches.length !== 1 || direction === "cancel") return;
       const dx = e.touches[0].clientX - x, dy = e.touches[0].clientY - y;
       if (!direction && Math.max(Math.abs(dx), Math.abs(dy)) > 8)
         direction = Math.abs(dx) > Math.abs(dy) * 1.2 ? "horizontal" : "vertical";
-      if (direction === "horizontal" && e.cancelable) {
+      if (direction && e.cancelable) {
         e.preventDefault();
-        el.scrollLeft = origin - dx * 0.7;
+        if (direction === "horizontal") { el.scrollTop = originY; el.scrollLeft = originX - dx * 0.7; }
+        else { el.scrollLeft = originX; el.scrollTop = originY - dy; }
       }
     };
+    const endTouch = () => { direction = "cancel"; };
+    el.addEventListener("touchend", endTouch);
+    el.addEventListener("touchcancel", endTouch);
     el.addEventListener("touchstart", startTouch, { passive: true });
     el.addEventListener("touchmove", moveTouch, { passive: false });
-    return () => { el.removeEventListener("touchstart", startTouch); el.removeEventListener("touchmove", moveTouch); };
+    return () => { el.removeEventListener("touchstart", startTouch); el.removeEventListener("touchmove", moveTouch); el.removeEventListener("touchend", endTouch); el.removeEventListener("touchcancel", endTouch); };
   }, []);
   useEffect(() => {
     const el = container.current;

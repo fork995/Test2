@@ -228,6 +228,19 @@ function Department({
     chain?: import("./model").Chain;
     action: "create" | PrescriptionAction;
   } | null>(null);
+  const feedMenu = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    const closeOutside = (event: PointerEvent) => {
+      const menu = feedMenu.current;
+      if (menu?.open && event.target instanceof Node && !menu.contains(event.target)) menu.open = false;
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && feedMenu.current?.open) feedMenu.current.open = false;
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => { document.removeEventListener("pointerdown", closeOutside); document.removeEventListener("keydown", closeOnEscape); };
+  }, []);
   const dischargingRef = useRef(false);
   useEffect(() => {
     source.prescriptions?.setEnabled(writeEnabled);
@@ -1277,11 +1290,19 @@ function Department({
           <>
             <div className="page-title compact-title general-feed-heading">
               <h1>Общая лента</h1>
-              <details className="feed-extra"><summary aria-label="Дополнительные фильтры">☷</summary>
-                <p className="micro">{branch?.name} · {branch?.departments.find(d => d.id === departmentId)?.name}</p>
-                {filters}
-                {viewFilter}
-                <button className="secondary small" disabled={pending || refreshingAll || !departmentId} onClick={() => void refreshDepartment()}>Обновить</button>
+              <details className="feed-extra" ref={feedMenu}>
+                <summary aria-label="Дополнительные фильтры"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 7h4m4 0h8M4 17h8m4 0h4M8 4v6m8 4v6"/></svg></summary>
+                <div className="feed-extra-panel" onClick={(event) => {
+                  const target = event.target;
+                  if (target instanceof Element && target.closest(".category-tabs button, .work-view-filter button")) {
+                    if (feedMenu.current) feedMenu.current.open = false;
+                  }
+                }}>
+                  <p className="micro">{branch?.name} · {branch?.departments.find(d => d.id === departmentId)?.name}</p>
+                  {filters}
+                  {viewFilter}
+                  <button className="secondary small" disabled={pending || refreshingAll || !departmentId} onClick={() => void refreshDepartment()}>Обновить</button>
+                </div>
               </details>
             </div>
             <div className="general-period">{periodBar}</div>

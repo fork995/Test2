@@ -2660,7 +2660,13 @@ a {
 .general-feed-heading { align-items:center; position:relative; }
 .feed-extra { position:relative; z-index:10; }
 .feed-extra summary { cursor:pointer; list-style:none; padding:9px 12px; border-radius:10px; background:#173b35; font-size:20px; }
-.feed-extra[open] { background:#142b2a; padding:8px; border-radius:12px; }
+.feed-extra summary::-webkit-details-marker { display:none; }
+.feed-extra-panel { position:absolute; top:calc(100% + 6px); right:0; box-sizing:border-box; width:min(280px, calc(100vw - 24px)); max-height:min(70dvh, 520px); overflow-y:auto; overscroll-behavior:contain; padding:10px; border:1px solid #31534c; border-radius:12px; background:#102d28; box-shadow:0 12px 28px #0009; }
+.feed-extra-panel .category-tabs, .feed-extra-panel .work-view-filter { display:flex; flex-direction:column; align-items:stretch; overflow:visible; gap:3px; padding:0; margin:0; }
+.feed-extra-panel .category-tabs button, .feed-extra-panel .work-view-filter button { width:100%; min-height:38px; text-align:left; padding:8px 10px; font-size:13px; }
+.feed-extra-panel .work-view-filter { margin-top:8px; padding-top:8px; border-top:1px solid #31534c; }
+.feed-extra-panel .secondary { margin-top:8px; width:100%; }
+
 .general-period .compact-day { margin:4px 0; padding:3px 0; }
 .general-period .shift-meta { margin:0; font-size:11px; }
 .compact-feed-filters { display:flex; gap:6px; margin:10px 0; }

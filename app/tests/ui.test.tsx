@@ -98,6 +98,20 @@ async function expandCurrent() {
   expect(toggle.getAttribute("aria-expanded")).toBe("true");
   return toggle.closest(".compact-feed-patient, .work-patient")!;
 }
+it("general filter panel closes on selection or outside pointer without resetting the shift", async () => {
+  await openDemo();
+  await nav("Общая лента");
+  const menu = container.querySelector<HTMLDetailsElement>(".feed-extra")!;
+  const day = container.querySelector(".compact-day")!.textContent;
+  menu.open = true;
+  await click(button("Растворы", menu));
+  expect(menu.open).toBe(false);
+  expect(button("Растворы", menu).getAttribute("aria-pressed")).toBe("true");
+  expect(container.querySelector(".compact-day")!.textContent).toBe(day);
+  menu.open = true;
+  await act(async () => document.body.dispatchEvent(new Event("pointerdown", {bubbles:true})));
+  expect(menu.open).toBe(false);
+});
 it("groups current feed by patient with collapsed photo rows and opens a prescription", async () => {
   await openDemo();
   await nav("Общая лента");

@@ -2714,3 +2714,13 @@ a {
 .bottom-nav button > span { font-size:18px; }
 .bottom-nav button.active { background:transparent; color:#8af1c6; text-shadow:0 0 9px #77e5ba55; }
 .bottom-nav button.active::after { content:""; position:absolute; bottom:1px; width:28px; height:2px; border-radius:2px; background:#8af1c6; box-shadow:0 0 7px #8af1c699; }
+
+/* Patient header and counters */
+.patient-home-header { align-items:center; margin:0 0 6px; padding:4px 0; background:linear-gradient(180deg,#104136 0%,#0d2e29 55%,transparent 100%); }
+.patient-home-actions { align-items:center; gap:5px; }
+.patient-home-actions .patient-count { box-sizing:border-box; flex:0 0 44px; width:44px; min-width:44px; height:44px; padding:0 2px; border:1px solid #7bcbb180; border-radius:11px; background:#176a50; color:#d8f9e9; }
+.patient-home-paw { color:#b5f8d9; background:#0b513e; }
+.patient-home-actions .patient-header-button { background:#16765b; border-color:#71cbb0; color:#effff7; }
+.patient-home-actions .patient-refresh { background:#124a48; border-color:#609d96; color:#e0faf4; }
+.patient-hour-now { background:linear-gradient(180deg,#93434e,#622630); box-shadow:inset 0 0 0 1px #a8515d; }
+.patient-hour-next { background:linear-gradient(180deg,#2d688b,#183c59); box-shadow:inset 0 0 0 1px #3c7ba3; }

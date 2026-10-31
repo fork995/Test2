@@ -27,11 +27,13 @@ export function PatientPhoto({
   large = false,
   demo = false,
   onEdit,
+  animalFallback = false,
 }: {
   patient: Patient;
   large?: boolean;
   demo?: boolean;
   onEdit?: () => void;
+  animalFallback?: boolean;
 }) {
   // The bundled demo illustration is synthetic. Real URLs remain only in session memory/DOM.
   const src =
@@ -39,7 +41,7 @@ export function PatientPhoto({
       ? new URL("./demo-patient.svg", import.meta.url).href
       : patientPhotoUrl(patient.photo);
   const photo = (
-    <Photo key={src ?? "letter"} src={src} name={patient.name} large={large} />
+    <Photo key={src ?? "letter"} src={src} name={patient.name} large={large} animalFallback={animalFallback} />
   );
   return onEdit ? (
     <button
@@ -61,10 +63,12 @@ function Photo({
   src,
   name,
   large,
+  animalFallback,
 }: {
   src: string | null;
   name: string;
   large: boolean;
+  animalFallback: boolean;
 }) {
   const [failed, setFailed] = useState(false),
     [loaded, setLoaded] = useState(false);
@@ -73,7 +77,7 @@ function Photo({
       className={`avatar patient-photo${large ? " patient-photo-large" : ""}`}
       aria-hidden="true"
     >
-      <span>{name.slice(0, 1)}</span>
+      <span>{animalFallback ? <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M5 10 3 4l5 2a9 9 0 0 1 8 0l5-2-2 6a8 8 0 1 1-14 0Z"/></svg> : name.slice(0, 1)}</span>
       {src && !failed && (
         <img
           src={src}

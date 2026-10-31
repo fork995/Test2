@@ -320,7 +320,7 @@ for (const [name, value, unit, label] of doses)
     const calls = server([chain]);
     await login();
     await click(
-      container.querySelector(".current-block .work-patient-toggle")!,
+      container.querySelector(".current-block .compact-feed-patient-toggle")!,
     );
     const expected = `${name} · ${label} · в/в`;
     expect(

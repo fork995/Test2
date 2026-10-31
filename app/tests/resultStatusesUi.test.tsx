@@ -389,7 +389,7 @@ it.each(["EXECUTED", "NOT_EXECUTED"])(
     const past = box.querySelector(".past-block")!;
     expect(past.querySelector(".time-toggle")?.textContent).toContain("1");
     await click(past.querySelector(".time-toggle")!);
-    await click(past.querySelector(".work-patient-toggle")!);
+    await click(past.querySelector(".compact-feed-patient-toggle")!);
     expect(past.querySelector(".work-item")).not.toBeNull();
     expect(calls.filter((c) => c.method === "DELETE")).toHaveLength(1);
     expect(calls.at(-1)!.method).toBe("GET");

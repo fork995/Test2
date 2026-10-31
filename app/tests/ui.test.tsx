@@ -92,9 +92,28 @@ async function openFirstPatient() {
   await click(container.querySelector(".patient-card")!);
 }
 async function expandCurrent() {
-  await click(container.querySelector(".current-block .work-patient-toggle")!);
-  return container.querySelector(".current-block .work-patient")!;
+  const toggle = container.querySelector<HTMLButtonElement>(".current-block .compact-feed-patient-toggle, .individual-workspace .current-block .work-patient-toggle")!;
+  expect(toggle.getAttribute("aria-expanded")).toBe("false");
+  await click(toggle);
+  expect(toggle.getAttribute("aria-expanded")).toBe("true");
+  return toggle.closest(".compact-feed-patient, .work-patient")!;
 }
+it("groups current feed by patient with collapsed photo rows and opens a prescription", async () => {
+  await openDemo();
+  await nav("Общая лента");
+  const groups = [...container.querySelectorAll<HTMLButtonElement>(".current-block .compact-feed-patient-toggle")];
+  expect(groups).toHaveLength(2);
+  expect(groups.every(g => g.getAttribute("aria-expanded") === "false")).toBe(true);
+  expect(container.querySelectorAll(".current-block .work-item")).toHaveLength(0);
+  expect(groups[0].querySelector(".patient-photo img")).not.toBeNull();
+  expect(groups[1].querySelector(".patient-photo svg")).not.toBeNull();
+  await click(groups[0]);
+  expect(groups[0].getAttribute("aria-expanded")).toBe("true");
+  const item = container.querySelector(".current-block .work-item");
+  expect(item).not.toBeNull();
+  await click(item!);
+  expect(container.querySelector("dialog[open]")).not.toBeNull();
+});
 it("Tranexam yellow every 8 hours appears at 15:00 Moscow while different result colors stay in history", async () => {
   const options = new Intl.DateTimeFormat().resolvedOptions();
   vi.spyOn(Intl.DateTimeFormat.prototype, "resolvedOptions").mockReturnValue({
@@ -204,7 +223,7 @@ it("missing revision color does not filter current or next-hour schedules", asyn
     "Synthetic without color",
   );
   expect(
-    container.querySelector(".next-block .work-patient-toggle"),
+    container.querySelector(".next-block .compact-feed-patient-toggle"),
   ).not.toBeNull();
   expect(container.querySelector(".schedule-alert")).toBeNull();
 });
@@ -233,7 +252,7 @@ it("at 10:31 the API worklist shows hourly current 10:00 and next 11:00 without 
   expect(current.querySelector(".work-item")?.textContent).toContain(
     "Запланировано, без отметки",
   );
-  await click(container.querySelector(".next-block .work-patient-toggle")!);
+  await click(container.querySelector(".next-block .compact-feed-patient-toggle")!);
   expect(
     container.querySelector(".next-block .work-item time")?.textContent,
   ).toBe("11:00");
@@ -263,10 +282,10 @@ it("zero with an exact mark is done, has no repeated work, and preserves history
   ]);
   await connect();
   expect(
-    container.querySelector(".current-block .work-patient-toggle"),
+    container.querySelector(".current-block .compact-feed-patient-toggle"),
   ).toBeNull();
   expect(
-    container.querySelector(".next-block .work-patient-toggle"),
+    container.querySelector(".next-block .compact-feed-patient-toggle"),
   ).toBeNull();
   expect(container.querySelector(".schedule-alert")).toBeNull();
   expect(
@@ -299,17 +318,16 @@ it("opens a compact time-first worklist with collapsed patient rows and honest i
   const calls = realMock();
   await connect();
   expect(container.querySelector(".current-block h2")?.textContent).toContain(
-    "Текущий час",
+    "Сейчас · 08:00",
   );
   expect(
-    container.querySelectorAll(".current-block .work-patient-toggle"),
+    container.querySelectorAll(".current-block .compact-feed-patient-toggle"),
   ).toHaveLength(2);
   expect(container.querySelector(".work-item")).toBeNull();
   const patient = await expandCurrent();
   expect(patient.querySelectorAll(".work-item")).toHaveLength(3);
-  expect(patient.querySelector(".work-patient-toggle")?.textContent).toContain(
-    "4.2 кг",
-  );
+  expect(patient.querySelector(".compact-feed-patient-toggle")?.getAttribute("aria-label")).toContain("Демо пациент 1");
+  expect(patient.querySelector(".compact-feed-patient-count")?.textContent).toBe("3");
   expect(patient.querySelector(".work-item")?.textContent).not.toContain(
     "Демо пациент",
   );
@@ -337,7 +355,7 @@ it("shows exact next-hour time, dose, route, concentration, instruction and solu
     /weightKg|viewMode|parentId|4.2|Ожидает|единицы не указаны/,
   );
   expect(patient.textContent).toContain("15 мл/ч");
-  await click(container.querySelector(".next-block .work-patient-toggle")!);
+  await click(container.querySelector(".next-block .compact-feed-patient-toggle")!);
   expect(
     container.querySelector(".next-block .work-item")?.textContent,
   ).toContain("09:00");
@@ -367,7 +385,7 @@ it("global category filters apply to every patient's current and next-hour group
   await expandCurrent();
   await click(button("Растворы", container.querySelector(".category-tabs")!));
   expect(
-    container.querySelectorAll(".current-block .work-patient-toggle"),
+    container.querySelectorAll(".current-block .compact-feed-patient-toggle"),
   ).toHaveLength(2);
   expect(
     container.querySelector(".current-block .work-item")?.textContent,
@@ -376,7 +394,7 @@ it("global category filters apply to every patient's current and next-hour group
     container.querySelector(".current-block .work-item")?.textContent,
   ).not.toContain("5 мг");
   expect(
-    container.querySelector(".next-block .work-patient-toggle"),
+    container.querySelector(".next-block .compact-feed-patient-toggle"),
   ).toBeNull();
 });
 it("groups grid categories in the confirmed order without changing assignment identities", async () => {
@@ -393,11 +411,13 @@ it("individual patient defaults to the same worklist and can switch to grid and 
   const calls = realMock();
   await connect();
   const group = await expandCurrent();
-  await click(group.querySelector(".work-open-patient")!);
+  expect(group.querySelector(".work-item")).not.toBeNull();
+  await openFirstPatient();
   expect(container.querySelector(".individual-workspace")).not.toBeNull();
   expect(
-    container.querySelectorAll(".current-block .work-patient-toggle"),
+    container.querySelectorAll(".individual-workspace .current-block .work-patient-toggle"),
   ).toHaveLength(1);
+  await click(container.querySelector(".individual-workspace .current-block .work-patient-toggle")!);
   expect(container.querySelector(".current-block .work-item")).not.toBeNull();
   await click(button("Сетка", container.querySelector(".view-switch")!));
   expect(container.querySelector("[role=table]")).not.toBeNull();
@@ -528,7 +548,7 @@ it("refresh removes a newly marked task, keeps other tasks, expansion and scroll
   );
   await connect();
   const group = await expandCurrent();
-  const toggle = group.querySelector(".work-patient-toggle")!;
+  const toggle = group.querySelector(".compact-feed-patient-toggle")!;
   container.scrollTop = 240;
   updated = true;
   await click(button("Обновить", container.querySelector(".compact-title")!));
@@ -540,7 +560,7 @@ it("refresh removes a newly marked task, keeps other tasks, expansion and scroll
     { id: "new-mark", hour: T(18, 8), status: "EXECUTED" },
   ];
   await act(async () => resolve(new Response(JSON.stringify(data))));
-  expect(group.querySelector(".work-patient-toggle")).toBe(toggle);
+  expect(group.querySelector(".compact-feed-patient-toggle")).toBe(toggle);
   expect(toggle.getAttribute("aria-expanded")).toBe("true");
   expect(group.textContent).not.toContain("Учебное текущее");
   expect(group.textContent).toContain("Учебное второе");
@@ -607,7 +627,7 @@ it("auto-refresh is optional, preserves expansion, and hour changes regroup with
   expect(calls).toHaveLength(7);
   expect(
     container
-      .querySelector(".current-block .work-patient-toggle")
+      .querySelector(".current-block .compact-feed-patient-toggle")
       ?.getAttribute("aria-expanded"),
   ).toBe("true");
   expect(container.querySelector(".refresh-status")?.textContent).toContain(
@@ -764,7 +784,7 @@ it("pagehide keeps the active session for Safari tab restoration", async () => {
   await openDemo();
   await act(async () => {
     window.dispatchEvent(new Event("pagehide"));
-    expect(container.querySelector(".work-patient")).not.toBeNull();
+    expect(container.querySelector(".compact-feed-patient")).not.toBeNull();
   });
   expect(container.querySelector("#jwt")).toBeNull();
 });
@@ -908,7 +928,7 @@ it("rounded zero-window assignment moves from next hour to done and the patient 
   const calls = realMock(raw);
   await connect();
   const next = container.querySelector(".next-block")!;
-  await click(next.querySelector(".work-patient-toggle")!);
+  await click(next.querySelector(".compact-feed-patient-toggle")!);
   expect(next.querySelector(".work-item time")?.textContent).toBe("11:00");
   expect(next.querySelector(".work-item")?.textContent).toContain(
     "Synthetic once",
@@ -929,7 +949,7 @@ it("rounded zero-window assignment moves from next hour to done and the patient 
   expect(container.querySelector(".next-block .work-item")).toBeNull();
   expect(
     container.querySelector('.next-block [data-status="done"]')?.textContent,
-  ).toBe("✓");
+  ).toBe("0");
   expect(
     container.querySelector(".next-block .work-empty")?.textContent,
   ).toContain("имеют отметку");
@@ -963,10 +983,10 @@ it("inactive editions do not trigger clarification; their stored data remain ins
   await connect();
   expect(container.querySelector(".schedule-alert")).toBeNull();
   expect(
-    container.querySelector(".current-block .work-patient-toggle"),
+    container.querySelector(".current-block .compact-feed-patient-toggle"),
   ).toBeNull();
   expect(
-    container.querySelector(".next-block .work-patient-toggle"),
+    container.querySelector(".next-block .compact-feed-patient-toggle"),
   ).toBeNull();
   expect(
     container.querySelector(".schedule-clarification .work-patient-toggle"),
@@ -1042,12 +1062,20 @@ it.each([undefined, null])(
     ]);
     await connect();
     expect(container.querySelector(".schedule-alert")).toBeNull();
-    expect(
-      container.querySelector(".current-block .work-patient-toggle"),
-    ).toBeNull();
-    expect(
-      container.querySelector(".next-block .work-patient-toggle"),
-    ).toBeNull();
+    const manualToggle = container.querySelector(".current-block .compact-feed-patient-toggle")!;
+    expect(manualToggle).not.toBeNull();
+    await click(manualToggle);
+    expect(container.querySelector(".current-block .work-item")?.textContent).toContain("Статус не определён");
+    expect(container.querySelector(".current-block .work-item time")?.textContent).toBe("08:31");
+    await click(container.querySelector(".current-block .work-item")!);
+    expect(container.querySelector("dialog[open]")?.textContent).toContain("CUSTOM_STATUS");
+    expect(container.querySelector("dialog[open]")?.textContent).toContain("Synthetic manual event");
+    expect(container.querySelectorAll("dialog .result-detail")).toHaveLength(1);
+    expect(container.querySelector("dialog[open]")?.textContent).toContain("По необходимости · отмечается вручную");
+    await click(container.querySelector('[aria-label="Закрыть детали"]')!);
+    await click(button("Требуют ·", container.querySelector(".compact-feed-filters")!));
+    expect(container.querySelector(".current-block .compact-feed-patient-toggle")).toBeNull();
+    expect(container.querySelector(".next-block .compact-feed-patient-toggle")).toBeNull();
     expect(
       container.querySelector(".schedule-clarification .work-patient-toggle"),
     ).toBeNull();
@@ -1074,6 +1102,19 @@ it.each([undefined, null])(
     expect(calls).toHaveLength(4);
   },
 );
+
+it("conflicting manual results stay visible as unknown without becoming an overdue task", async () => {
+  realMock([{id:"manual-conflict", name:"Учебное событие", type:"MONITORING", elements:[{id:"revision", dates:{start:T(18,8),periodicity:null}, results:[{id:"a",hour:T(18,8,15),status:"EXECUTED"},{id:"b",hour:T(18,8,15),status:"NOT_EXECUTED"}]}]}]);
+  await connect();
+  const group = await expandCurrent();
+  const item = group.querySelector(".work-item")!;
+  expect(item.textContent).toContain("Статус не определён");
+  expect(item.textContent).not.toContain("Запланировано, без отметки");
+  await click(item);
+  expect(container.querySelectorAll("dialog .result-detail")).toHaveLength(2);
+  expect(container.querySelector("dialog")?.textContent).toContain("Выполнено");
+  expect(container.querySelector("dialog")?.textContent).toContain("Не выполнено");
+});
 
 it("structured mg/kg yields the same dose/volume in both feeds and details; diagnostics hides raw IDs by default", async () => {
   const prescriptionId = "synthetic-prescription-long-id-00000000";

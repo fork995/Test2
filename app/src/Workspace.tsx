@@ -1275,26 +1275,16 @@ function Department({
           </>
         ) : (
           <>
-            <div className="page-title compact-title">
-              <div>
-                <p className="eyebrow">
-                  {branch?.name || "Выберите филиал"} ·{" "}
-                  {branch?.departments.find((d) => d.id === departmentId)
-                    ?.name || "отделение не выбрано"}
-                </p>
-                <h1>Общая лента</h1>
-              </div>
-              <button
-                className="secondary small"
-                disabled={pending || refreshingAll || !departmentId}
-                onClick={() => void refreshDepartment()}
-              >
-                Обновить
-              </button>
+            <div className="page-title compact-title general-feed-heading">
+              <h1>Общая лента</h1>
+              <details className="feed-extra"><summary aria-label="Дополнительные фильтры">☷</summary>
+                <p className="micro">{branch?.name} · {branch?.departments.find(d => d.id === departmentId)?.name}</p>
+                {filters}
+                {viewFilter}
+                <button className="secondary small" disabled={pending || refreshingAll || !departmentId} onClick={() => void refreshDepartment()}>Обновить</button>
+              </details>
             </div>
-            {periodBar}
-            {filters}
-            {viewFilter}
+            <div className="general-period">{periodBar}</div>
             <p className="refresh-status" role="status">
               {refreshingAll ? "Обновление… " : ""}
               {lastSuccess
@@ -1334,6 +1324,7 @@ function Department({
               )}
             {active.length > 0 && (
               <WorkBoard
+                compact
                 patients={active}
                 snapshot={snapshot}
                 period={period}

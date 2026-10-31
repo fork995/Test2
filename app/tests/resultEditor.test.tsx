@@ -311,7 +311,7 @@ it("full demo flow: editing enabled by default, save, history edit and confirmed
   ) as HTMLInputElement;
   expect(enable.checked).toBe(true);
   await click(button("Общая лента", container.querySelector(".bottom-nav")!));
-  await click(container.querySelector(".current-block .work-patient-toggle")!);
+  await click(container.querySelector(".current-block .compact-feed-patient-toggle")!);
   await click(container.querySelector(".current-block .work-item")!);
   await click(button("Отметить выполнение"));
   await click(button("✓ Выполнено"));

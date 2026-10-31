@@ -22,6 +22,8 @@ import { workClinicalFields, clinicalTitle } from "./clinical";
 import type { Selection } from "./Grid";
 import { WindowedList } from "./WindowedList";
 import { classifySchedule } from "./hourlySummary";
+import { feedSlot, manualFeedResults } from "./generalFeedModel";
+import { PatientPhoto } from "./PatientPhoto";
 interface Row {
   key: string;
   index: IndexedChain;
@@ -30,6 +32,9 @@ interface Row {
   entry?: Entry;
   warnings: string[];
   scheduled?: boolean;
+  entries?: Entry[];
+  undefinedStatus?: boolean;
+  patientName?: string;
 }
 interface Prepared {
   patient: Patient;
@@ -68,7 +73,7 @@ const WorkRow = memo(function WorkRow({
           index: row.index,
           revision: row.revision,
           at: row.at ?? undefined,
-          entries: row.entry ? [row.entry] : row.scheduled ? [] : undefined,
+          entries: row.entries ?? (row.entry ? [row.entry] : row.scheduled ? [] : undefined),
           scheduled: row.scheduled,
           warnings,
         })
@@ -76,7 +81,7 @@ const WorkRow = memo(function WorkRow({
     >
       <span className="work-row-top">
         <time>{row.at === null ? "Уточнить" : formatTime(row.at, zone)}</time>
-        <strong>{clinicalTitle(row.index.chain, row.revision)}</strong>
+        <strong>{row.patientName ? `${row.patientName} · ` : ""}{clinicalTitle(row.index.chain, row.revision)}</strong>
         {warnings.length > 0 && (
           <span
             className="work-warning-icon"
@@ -104,10 +109,11 @@ const WorkRow = memo(function WorkRow({
       {row.revision?.instruction && (
         <span className="work-instruction">{row.revision.instruction}</span>
       )}
+      {row.undefinedStatus && <span className="work-mark unknown">Статус не определён</span>}
       {row.scheduled && (
         <span className="work-mark">Запланировано, без отметки</span>
       )}
-      {row.entry && (
+      {row.entry && !row.undefinedStatus && (
         <span
           className={`work-mark ${row.entry.result.status === "EXECUTED" ? "executed" : row.entry.result.status === "NOT_EXECUTED" ? "not-executed" : "unknown"}`}
         >
@@ -148,6 +154,7 @@ export function WorkBoard({
   onSelect,
   onOpenPatient,
   onRetry,
+  compact = false,
 }: {
   patients: Patient[];
   snapshot: Map<string, CardData>;
@@ -162,6 +169,7 @@ export function WorkBoard({
   onSelect: (s: Selection) => void;
   onOpenPatient: (p: Patient) => void;
   onRetry: (card: string) => void;
+  compact?: boolean;
 }) {
   const policy = demo ? DEMO_SCHEDULE_POLICY : API_SCHEDULE_POLICY;
   const cache = useRef(
@@ -232,6 +240,7 @@ export function WorkBoard({
     [pastOpen, setPastOpen] = useState(false),
     [historyOpen, setHistoryOpen] = useState(new Set<string>()),
     [openHours, setOpenHours] = useState(new Set<number>());
+  const [feedFilter, setFeedFilter] = useState<"all" | "required" | "missed">("all");
   const start = currentHourStart(now, zone);
   const bucketAt = (at: number) =>
     at < start
@@ -353,7 +362,7 @@ export function WorkBoard({
           if (
             entry.result.at! < period.start ||
             entry.result.at! >= period.end ||
-            (!["EXECUTED", "NOT_EXECUTED"].includes(entry.result.status) &&
+            (!compact && !["EXECUTED", "NOT_EXECUTED"].includes(entry.result.status) &&
               classifySchedule(entry.revision) !== "MANUAL_AS_NEEDED")
           )
             continue;
@@ -376,7 +385,42 @@ export function WorkBoard({
       }
     }
     return map;
-  }, [history, period, prepared, category, zone]);
+  }, [history, period, prepared, category, zone, compact]);
+  const allSlots = prepared.flatMap(p => p.schedule.slots.map(slot => ({ ...feedSlot(slot), patient: p.patient })));
+  const manualUnknown = period ? prepared.flatMap(p => (p.data?.indexes ?? [])
+    .filter(index => category === "ALL" || index.chain.type === category)
+    .flatMap(index => manualFeedResults(index, period.start, period.end))
+    .filter(item => item.state === "unknown")
+    .map(item => ({ slot: item, entries: item.entries, state: item.state, patient: p.patient }))) : [];
+  const working = [...allSlots.filter(item => item.state === "unmarked" || item.state === "unknown"), ...manualUnknown];
+  const missedCount = working.filter(item => item.state === "unmarked" && bucketAt(item.slot.at) === "overdue").length;
+  const uncertainPast = working.filter(item => item.state === "unknown" && bucketAt(item.slot.at) === "overdue").length;
+  const displayed = working.filter(item => feedFilter === "all" || (item.state === "unmarked" && (feedFilter === "required" || bucketAt(item.slot.at) === "overdue")));
+  function compactItems(bucket: "overdue" | "current" | "next" | "later", hour?: number) {
+    return displayed.filter(item => bucketAt(item.slot.at) === bucket && (hour === undefined || currentHourStart(item.slot.at, zone) === hour)).sort((a,b) => a.slot.at - b.slot.at);
+  }
+  function compactRows(bucket: "overdue" | "current" | "next" | "later", hour?: number) {
+    const groups = new Map<string, { patient: Patient; rows: Row[] }>();
+    for (const item of compactItems(bucket, hour)) {
+      const id = JSON.stringify([item.patient.id, item.patient.cardId]);
+      const group = groups.get(id) ?? { patient: item.patient, rows: [] };
+      group.rows.push({ ...item.slot, at: item.slot.at, warnings: [], scheduled: item.state === "unmarked", undefinedStatus: item.state === "unknown", entries: item.entries });
+      groups.set(id, group);
+    }
+    return [...groups].map(([id, group]) => {
+      const key = `compact:${bucket}:${hour ?? "all"}:${id}`;
+      const open = expanded.has(key);
+      return <section className="compact-feed-patient" key={key}>
+        <button type="button" className="compact-feed-patient-toggle" aria-expanded={open} aria-label={`${open ? "Свернуть" : "Раскрыть"} ${group.patient.name}, ${group.rows.length} назначений`} onClick={() => toggle(key)}>
+          <PatientPhoto patient={group.patient} demo={demo} animalFallback />
+          <strong>{group.patient.name}</strong><span className="compact-feed-patient-count">{group.rows.length}</span><span aria-hidden="true">{open ? "⌃" : "⌄"}</span>
+        </button>
+        {open && <WindowedList items={group.rows} id={rowId} render={row => <WorkRow row={row} zone={zone} onSelect={selection => onSelect({ ...selection, patient: group.patient })} />}/>} 
+      </section>;
+    });
+  }
+  const compactLaterHours = [...new Set(displayed.filter(item => bucketAt(item.slot.at) === "later").map(item => currentHourStart(item.slot.at, zone)))].sort((a,b) => a-b);
+  const compactPastCount = displayed.filter(item => bucketAt(item.slot.at) === "overdue").length;
   return (
     <div className="work-board">
       {incomplete && (
@@ -390,7 +434,11 @@ export function WorkBoard({
           {refreshing.length ? " · обновляются ранее полученные данные" : ""}.
         </p>
       )}
-      {history ? (
+      {compact && !history ? <>
+        <nav className="compact-feed-filters" aria-label="Фильтр заданий">{([["all", "Все", working.length], ["required", "Требуют", working.filter(x => x.state === "unmarked").length], ["missed", "Пропущенные", missedCount]] as const).map(([value,label,total]) => <button key={value} className={feedFilter === value ? "active" : ""} aria-pressed={feedFilter === value} onClick={() => setFeedFilter(value)}>{label} · {total}</button>)}</nav>
+        <section className="time-block past-block"><button className="time-toggle" aria-expanded={pastOpen} onClick={() => setPastOpen(v=>!v)}>⚠ Пропущенные <span>{missedCount}{feedFilter === "all" && uncertainPast ? ` · не определено: ${uncertainPast}` : ""} {pastOpen ? "⌃" : "⌄"}</span></button>{pastOpen && (compactPastCount ? compactRows("overdue") : <p className="work-empty">Нет назначений.</p>)}</section>
+        {feedFilter !== "missed" && <><section className="time-block current-block"><h2>Сейчас · {formatTime(start,zone)} <span data-status={hourDone(start) ? "done" : "planned"}>{compactItems("current").length}</span></h2>{compactRows("current")}{!compactItems("current").length && hourDone(start) && <p className="work-empty">Все рассчитанные назначения имеют отметку.</p>}</section><section className="time-block next-block"><h2>Следующий час · {formatTime(start + HOUR,zone)} <span data-status={hourDone(start + HOUR) ? "done" : "planned"}>{compactItems("next").length}</span></h2>{compactRows("next")}{!compactItems("next").length && hourDone(start + HOUR) && <p className="work-empty">Все рассчитанные назначения имеют отметку.</p>}</section><section className="time-block later-block"><button className="time-toggle" aria-expanded={laterOpen} onClick={() => setLaterOpen(v=>!v)}>Позже в смене <span>{compactItems("later").length} {laterOpen ? "⌃" : "⌄"}</span></button>{laterOpen && compactLaterHours.map(hour => <div key={hour}><h3>{formatDate(hour,zone)} · {formatTime(hour,zone)}</h3>{compactRows("later",hour)}</div>)}</section></>}
+      </> : history ? (
         <section className="work-history">
           <h2>История отметок</h2>
           {[...historyGroups]

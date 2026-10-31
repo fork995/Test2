@@ -221,7 +221,7 @@ it("initial login selects authorized target IDs without wrong or duplicate start
   ]);
   expect(container.textContent).toContain("Хирургический стационар");
   expect(calls.every((c) => c.method === "GET")).toBe(true);
-  await click(container.querySelector(".current-block .work-patient-toggle")!);
+  await click(container.querySelector(".current-block .compact-feed-patient-toggle")!);
   await click(container.querySelector(".current-block .work-item")!);
   expect(button("Отметить выполнение")).toBeTruthy();
 });
@@ -296,6 +296,64 @@ it("unavailable default shows a selector on the main screen and does not fetch r
   );
   expect(calls.filter((c) => c.url.endsWith("/patients"))).toHaveLength(1);
 });
+it("general feed keeps original state and allows retry after network save error", async () => {
+  const raw = rawMedication(20);
+  const calls = mockServer([raw]);
+  const server = globalThis.fetch;
+  let failed = false;
+  vi.stubGlobal("fetch", vi.fn(async (url: string, options: RequestInit) => {
+    if (options.method === "PUT" && !failed) { failed = true; return new Response(null, {status: 500}); }
+    return server(url, options);
+  }));
+  await login();
+  await click(container.querySelector(".current-block .compact-feed-patient-toggle")!);
+  await click(container.querySelector(".current-block .work-item")!);
+  await click(button("Отметить выполнение"));
+  await click(button("✓ Выполнено"));
+  await click(button("Сохранить"));
+  expect(container.querySelector('.result-editor [role="alert"]')).not.toBeNull();
+  expect(container.textContent).not.toContain("Статус сохранён");
+  expect(raw.elements[0].results).toHaveLength(0);
+  await click(button("Обновить и закрыть"));
+  expect(container.querySelector(".result-editor")).toBeNull();
+  expect(raw.elements[0].results).toHaveLength(0);
+  await click(container.querySelector(".current-block .work-item")!);
+  await click(button("Отметить выполнение"));
+  await click(button("✓ Выполнено"));
+  await click(button("Сохранить"));
+  expect(calls.filter(c => c.method === "PUT")).toHaveLength(1);
+  expect(raw.elements[0].results).toHaveLength(1);
+  expect(container.textContent).toContain("Статус сохранён");
+});
+for (const status of ["EXECUTED", "NOT_EXECUTED"] as const)
+  it(`general feed ${status}: sends correct result and refreshes history`, async () => {
+    const raw = rawMedication(20);
+    const calls = mockServer([raw]);
+    await login();
+    await click(container.querySelector(".current-block .compact-feed-patient-toggle")!);
+    await click(container.querySelector(".current-block .work-item")!);
+    await click(button("Отметить выполнение"));
+    if (status === "EXECUTED") {
+      await click(button("✓ Выполнено"));
+      await input(container.querySelector("textarea")!, "Проверка 🐈");
+    } else {
+      await click(button("Не выполнено"));
+      await select(container.querySelector('[aria-label="Причина невыполнения"]')!, "DEVICE_ABSENT");
+    }
+    await click(button("Сохранить"));
+    const writes = calls.filter(c => c.method === "PUT");
+    expect(writes).toHaveLength(1);
+    expect(writes[0].url).toMatch(/\/medical-records\/fake-card\/prescriptions\/lid-revision\/execution-results\/[^/]+$/);
+    expect(writes[0].body).toMatchObject({status, hour:iso(at)});
+    if (status === "EXECUTED") expect(writes[0].body?.comment).toBe("Проверка 🐈");
+    else expect(writes[0].body?.reason).toBe("DEVICE_ABSENT");
+    expect(calls.slice(calls.indexOf(writes[0]) + 1).some(c => c.method === "GET" && c.url.endsWith("/prescription-chains"))).toBe(true);
+    expect(container.querySelector(".current-block .work-item")).toBeNull();
+    await click(button("История отметок"));
+    await click(button("08:00", container.querySelector(".work-history")!));
+    await click(container.querySelector(".work-history .work-patient-toggle")!);
+    expect(container.querySelector(".work-history .work-item")?.textContent).toContain(status === "EXECUTED" ? "Выполнено" : "Не выполнено");
+  });
 for (const status of ["EXECUTED", "NOT_EXECUTED"] as const)
   it(`${status}: save, reread, edit and delete preserve source cell color and write payload`, async () => {
     const raw = rawMedication(20);
@@ -366,7 +424,7 @@ for (const value of [10, 20, 40, 50])
     const calls = mockServer([rawMedication(value)]);
     await login();
     await click(
-      container.querySelector(".current-block .work-patient-toggle")!,
+      container.querySelector(".current-block .compact-feed-patient-toggle")!,
     );
     expect(
       container.querySelector(".current-block .work-item")?.textContent,

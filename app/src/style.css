@@ -2656,3 +2656,20 @@ a {
 .grid-frame-expanded { height:100dvh; inset:0 auto auto 0; width:100%; box-sizing:border-box; }
 .grid-frame-expanded .grid-toolbar { flex:none; margin:0; height:32px; }
 .grid-frame-expanded .grid-expand { width:32px; height:32px; }
+
+.general-feed-heading { align-items:center; position:relative; }
+.feed-extra { position:relative; z-index:10; }
+.feed-extra summary { cursor:pointer; list-style:none; padding:9px 12px; border-radius:10px; background:#173b35; font-size:20px; }
+.feed-extra[open] { background:#142b2a; padding:8px; border-radius:12px; }
+.general-period .compact-day { margin:4px 0; padding:3px 0; }
+.general-period .shift-meta { margin:0; font-size:11px; }
+.compact-feed-filters { display:flex; gap:6px; margin:10px 0; }
+.compact-feed-filters button { flex:1; min-width:0; padding:9px 3px; font-size:12px; background:#193630; color:#d9ece4; border-radius:10px; }
+.compact-feed-filters button.active { background:#a7e8cc; color:#092d22; }
+.compact-feed-filters button:last-child:not(.active) { color:#efcb8c; }
+
+.compact-feed-patient-toggle { display:flex; align-items:center; gap:10px; width:100%; min-width:0; min-height:56px; padding:7px 10px; color:#e0ece8; background:#142d2a; border-radius:10px; text-align:left; }
+.compact-feed-patient-toggle .patient-photo { flex:0 0 42px; width:42px; height:42px; min-width:42px; border-radius:9px; }
+.compact-feed-patient-toggle strong { flex:1; min-width:0; overflow-wrap:anywhere; }
+.compact-feed-patient-count { font-weight:700; }
+.compact-feed-patient { margin-top:5px; }

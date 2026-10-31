@@ -2681,3 +2681,5 @@ a {
 .compact-feed-patient-toggle strong { flex:1; min-width:0; overflow-wrap:anywhere; }
 .compact-feed-patient-count { font-weight:700; }
 .compact-feed-patient { margin-top:5px; }
+
+.general-feed-heading .feed-refresh { margin:0 8px 0 auto; min-width:44px; min-height:44px; }

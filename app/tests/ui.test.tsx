@@ -625,7 +625,9 @@ it("refresh removes a newly marked task, keeps other tasks, expansion and scroll
   const toggle = group.querySelector(".compact-feed-patient-toggle")!;
   container.scrollTop = 240;
   updated = true;
-  await click(button("Обновить", container.querySelector(".compact-title")!));
+  await click(container.querySelector<HTMLButtonElement>(".feed-refresh")!);
+  expect(container.querySelector<HTMLButtonElement>(".feed-refresh")!.disabled).toBe(true);
+  expect(container.querySelector(".feed-refresh")?.getAttribute("aria-busy")).toBe("true");
   expect(
     container.querySelector(".current-block .work-item")?.textContent,
   ).toContain("Учебное текущее");
@@ -664,7 +666,7 @@ it("a failed department refresh remains retryable and never advances the success
   await expandCurrent();
   const stamp = container.querySelector(".refresh-status")!.textContent;
   fail = true;
-  await click(button("Обновить", container.querySelector(".compact-title")!));
+  await click(container.querySelector<HTMLButtonElement>(".feed-refresh")!);
   expect(container.querySelector(".refresh-status")!.textContent).toBe(stamp);
   expect(
     [...container.querySelectorAll(".schedule-alert")].some((e) =>
@@ -672,11 +674,11 @@ it("a failed department refresh remains retryable and never advances the success
     ),
   ).toBe(true);
   expect(
-    button("Обновить", container.querySelector(".compact-title")!).disabled,
+    container.querySelector<HTMLButtonElement>(".feed-refresh")!.disabled,
   ).toBe(false);
   expect(container.querySelector(".current-block .work-item")).not.toBeNull();
   fail = false;
-  await click(button("Обновить", container.querySelector(".compact-title")!));
+  await click(container.querySelector<HTMLButtonElement>(".feed-refresh")!);
   expect(container.textContent).not.toContain("Список пациентов не обновлён");
   expect(calls).toHaveLength(8);
 });
@@ -1019,7 +1021,7 @@ it("rounded zero-window assignment moves from next hour to done and the patient 
   raw[0].elements[0].results = [
     { id: "mark", hour: T(18, 11), status: "NOT_EXECUTED" },
   ];
-  await click(button("Обновить", container.querySelector(".compact-title")!));
+  await click(container.querySelector<HTMLButtonElement>(".feed-refresh")!);
   expect(container.querySelector(".next-block .work-item")).toBeNull();
   expect(
     container.querySelector('.next-block [data-status="done"]')?.textContent,

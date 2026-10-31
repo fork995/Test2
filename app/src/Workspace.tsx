@@ -1290,6 +1290,7 @@ function Department({
           <>
             <div className="page-title compact-title general-feed-heading">
               <h1>Общая лента</h1>
+              <button type="button" className="patient-refresh feed-refresh" aria-label={refreshingAll ? "Обновление общей ленты" : "Обновить общую ленту"} title="Обновить общую ленту" aria-busy={refreshingAll} disabled={pending || refreshingAll || !departmentId} onClick={() => void refreshDepartment()}>{refreshingAll ? "…" : "↻"}</button>
               <details className="feed-extra" ref={feedMenu}>
                 <summary aria-label="Дополнительные фильтры"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 7h4m4 0h8M4 17h8m4 0h4M8 4v6m8 4v6"/></svg></summary>
                 <div className="feed-extra-panel" onClick={(event) => {

@@ -2674,8 +2674,10 @@ a {
 .compact-feed-filters button.active { background:#a7e8cc; color:#092d22; }
 .compact-feed-filters button:last-child:not(.active) { color:#efcb8c; }
 
-.compact-feed-patient-toggle { display:flex; align-items:center; gap:10px; width:100%; min-width:0; min-height:56px; padding:7px 10px; color:#e0ece8; background:#142d2a; border-radius:10px; text-align:left; }
-.compact-feed-patient-toggle .patient-photo { flex:0 0 42px; width:42px; height:42px; min-width:42px; border-radius:9px; }
+.compact-feed-patient-head { display:flex; align-items:center; gap:10px; width:100%; min-width:0; min-height:56px; padding:6px 10px; box-sizing:border-box; background:#142d2a; border-radius:10px; }
+.compact-feed-patient-photo { display:grid; place-items:center; flex:0 0 44px; width:44px; height:44px; min-width:44px; padding:0; border:0; background:transparent; border-radius:9px; }
+.compact-feed-patient-photo .patient-photo { width:42px; height:42px; min-width:42px; border-radius:9px; }
+.compact-feed-patient-toggle { display:flex; align-items:center; gap:10px; flex:1; width:auto; min-width:0; min-height:44px; padding:0; color:#e0ece8; background:transparent; border:0; text-align:left; }
 .compact-feed-patient-toggle strong { flex:1; min-width:0; overflow-wrap:anywhere; }
 .compact-feed-patient-count { font-weight:700; }
 .compact-feed-patient { margin-top:5px; }

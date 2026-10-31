@@ -119,8 +119,8 @@ it("groups current feed by patient with collapsed photo rows and opens a prescri
   expect(groups).toHaveLength(2);
   expect(groups.every(g => g.getAttribute("aria-expanded") === "false")).toBe(true);
   expect(container.querySelectorAll(".current-block .work-item")).toHaveLength(0);
-  expect(groups[0].querySelector(".patient-photo img")).not.toBeNull();
-  expect(groups[1].querySelector(".patient-photo svg")).not.toBeNull();
+  expect(groups[0].closest(".compact-feed-patient")!.querySelector(".patient-photo img")).not.toBeNull();
+  expect(groups[1].closest(".compact-feed-patient")!.querySelector(".patient-photo svg")).not.toBeNull();
   await click(groups[0]);
   expect(groups[0].getAttribute("aria-expanded")).toBe("true");
   const item = container.querySelector(".current-block .work-item");
@@ -128,6 +128,66 @@ it("groups current feed by patient with collapsed photo rows and opens a prescri
   await click(item!);
   expect(container.querySelector("dialog[open]")).not.toBeNull();
 });
+it("photo navigation preserves the expanded patient after returning to the general feed", async () => {
+  await openDemo(); await nav("Общая лента");
+  const group = container.querySelector(".current-block .compact-feed-patient")!;
+  const toggle = group.querySelector(".compact-feed-patient-toggle")!;
+  expect(group.querySelector(".compact-feed-patient-photo img")).not.toBeNull();
+  await click(toggle);
+  expect(toggle.getAttribute("aria-expanded")).toBe("true");
+  const title = container.querySelector(".compact-day")!.textContent;
+  await click(group.querySelector(".compact-feed-patient-photo")!);
+  expect(toggle.getAttribute("aria-expanded")).toBe("true");
+  await nav("Общая лента");
+  expect(container.querySelector(".compact-day")!.textContent).toBe(title);
+  expect(container.querySelector(".current-block .compact-feed-patient-toggle")?.getAttribute("aria-expanded")).toBe("true");
+  expect(container.querySelector(".current-block .work-item")).not.toBeNull();
+});
+
+it.each(["current", "next", "overdue", "later"] as const)("photo opens the correct same-named patient from %s without toggling", async (bucket) => {
+  vi.spyOn(Date, "now").mockReturnValue(Date.parse(T(18,10,31)));
+  const patients = rawPatients();
+  patients[0].name = "Одинаковое имя"; patients[1].name = "Одинаковое имя";
+  patients[1].weightKg = 9.9;
+  const data = [8,10,11,12].map(hour => ({id:`chain-${hour}`,name:`Учебное ${hour}`,type:"MONITORING",elements:[{id:`rev-${hour}`,dates:{start:T(18,hour),periodicity:0},results:[]}]}));
+  const calls: string[] = [];
+  vi.stubGlobal("fetch", vi.fn(async (url: string, options: RequestInit) => {
+    calls.push(url); expect(options.method).toBe("GET");
+    const records = url.includes("/c2/") ? data.map(chain => ({...chain, name: `${chain.name} · карта 2`})) : data;
+    return Response.json(url.endsWith("/branches") ? branches : url.endsWith("/patients") ? patients : records);
+  }));
+  await connect();
+  let scope: Element;
+  if (bucket === "overdue") { scope = container.querySelector(".past-block")!; await click(scope.querySelector(".time-toggle")!); }
+  else if (bucket === "later") { scope = container.querySelector(".later-block")!; await click(scope.querySelector(".time-toggle")!); }
+  else scope = container.querySelector(bucket === "current" ? ".current-block" : ".next-block")!;
+  const groups = [...scope.querySelectorAll(".compact-feed-patient")];
+  expect(groups).toHaveLength(2);
+  const second = groups[1];
+  const toggle = second.querySelector(".compact-feed-patient-toggle")!;
+  expect(toggle.getAttribute("aria-expanded")).toBe("false");
+  const photo = second.querySelector(".compact-feed-patient-photo")!;
+  expect(photo.querySelector(".patient-photo svg")).not.toBeNull();
+  const before = calls.length;
+  await click(photo);
+  expect(container.querySelector(".individual-workspace .patient-heading")?.textContent).toContain("Одинаковое имя");
+  expect(container.querySelector(".individual-workspace")?.textContent).toContain("9.9 кг");
+  expect(toggle.getAttribute("aria-expanded")).toBe("false");
+  await click(button("Сетка", container.querySelector(".view-switch")!));
+  expect(container.querySelector(".grid-body")?.textContent).toContain("карта 2");
+  expect(calls).toHaveLength(before);
+  await nav("Общая лента");
+  expect(container.querySelector(".general-feed-heading h1")?.textContent).toBe("Общая лента");
+  if (bucket === "overdue") await click(container.querySelector(".past-block .time-toggle")!);
+  if (bucket === "later") await click(container.querySelector(".later-block .time-toggle")!);
+  const returnedScope = container.querySelector(bucket === "overdue" ? ".past-block" : bucket === "later" ? ".later-block" : bucket === "next" ? ".next-block" : ".current-block")!;
+  const returnedToggle = returnedScope.querySelectorAll(".compact-feed-patient-toggle")[1];
+  await click(returnedToggle);
+  expect(returnedToggle.getAttribute("aria-expanded")).toBe("true");
+  expect(container.querySelector(".individual-workspace")).toBeNull();
+  expect(returnedToggle.closest(".compact-feed-patient")?.querySelector(".work-item")?.textContent).toContain("карта 2");
+});
+
 it("Tranexam yellow every 8 hours appears at 15:00 Moscow while different result colors stay in history", async () => {
   const options = new Intl.DateTimeFormat().resolvedOptions();
   vi.spyOn(Intl.DateTimeFormat.prototype, "resolvedOptions").mockReturnValue({

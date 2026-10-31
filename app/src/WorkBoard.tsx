@@ -411,10 +411,14 @@ export function WorkBoard({
       const key = `compact:${bucket}:${hour ?? "all"}:${id}`;
       const open = expanded.has(key);
       return <section className="compact-feed-patient" key={key}>
-        <button type="button" className="compact-feed-patient-toggle" aria-expanded={open} aria-label={`${open ? "Свернуть" : "Раскрыть"} ${group.patient.name}, ${group.rows.length} назначений`} onClick={() => toggle(key)}>
-          <PatientPhoto patient={group.patient} demo={demo} animalFallback />
-          <strong>{group.patient.name}</strong><span className="compact-feed-patient-count">{group.rows.length}</span><span aria-hidden="true">{open ? "⌃" : "⌄"}</span>
-        </button>
+        <div className="compact-feed-patient-head">
+          <button type="button" className="compact-feed-patient-photo" aria-label={`Открыть карту пациента ${group.patient.name}`} onClick={() => onOpenPatient(group.patient)}>
+            <PatientPhoto patient={group.patient} demo={demo} animalFallback />
+          </button>
+          <button type="button" className="compact-feed-patient-toggle" aria-expanded={open} aria-label={`${open ? "Свернуть" : "Раскрыть"} ${group.patient.name}, ${group.rows.length} назначений`} onClick={() => toggle(key)}>
+            <strong>{group.patient.name}</strong><span className="compact-feed-patient-count">{group.rows.length}</span><span aria-hidden="true">{open ? "⌃" : "⌄"}</span>
+          </button>
+        </div>
         {open && <WindowedList items={group.rows} id={rowId} render={row => <WorkRow row={row} zone={zone} onSelect={selection => onSelect({ ...selection, patient: group.patient })} />}/>} 
       </section>;
     });

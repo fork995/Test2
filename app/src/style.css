@@ -2724,3 +2724,59 @@ a {
 .patient-home-actions .patient-refresh { background:#124a48; border-color:#609d96; color:#e0faf4; }
 .patient-hour-now { background:linear-gradient(180deg,#93434e,#622630); box-shadow:inset 0 0 0 1px #a8515d; }
 .patient-hour-next { background:linear-gradient(180deg,#2d688b,#183c59); box-shadow:inset 0 0 0 1px #3c7ba3; }
+
+/* Unified warm dark theme: clinical status and API-provided colors remain independent. */
+:root {
+  --warm-bg:#211c1a; --warm-secondary:#302925; --warm-card:#3a302c;
+  --warm-surface:#463b36; --warm-text:#eae4df; --warm-muted:#bdb2aa;
+  --warm-border:#594a43; --warm-accent:#e87836;
+  --muted:var(--warm-muted); --line:var(--warm-border); --green:var(--warm-accent); --surface:var(--warm-card);
+  color:var(--warm-text); background:var(--warm-bg);
+}
+body, .app, .workspace, .connect-page { background:var(--warm-bg); color:var(--warm-text); }
+label, .muted, .micro, .eyebrow, .patient-owner, .refresh-status, .shift-meta, .day-nav small, .patient-card-meta, .patient-home-brand small { color:var(--warm-muted); }
+input:not([type=checkbox]):not([type=radio]), select, textarea { background:var(--warm-secondary); border-color:var(--warm-border); color:var(--warm-text); }
+.panel, .connect-card, .bottom-sheet, .prescription-dialog, .result-editor, .archive-card, .feed-extra-panel { background:var(--warm-card); border-color:var(--warm-border); color:var(--warm-text); }
+.secondary, .icon-button, .category-tabs button, .work-view-filter button, .view-switch button, .patient-home-actions .patient-header-button, .patient-home-actions .patient-refresh, .patient-home-actions .patient-count, .feed-extra summary { background:var(--warm-secondary); border-color:var(--warm-border); color:var(--warm-text); box-shadow:none; }
+.primary { background:var(--warm-accent); border-color:var(--warm-accent); color:#211c1a; }
+.category-tabs button.active, .work-view-filter button.active, .view-switch button.active, .compact-feed-filters button.active { background:var(--warm-surface); border-color:var(--warm-accent); color:var(--warm-text); }
+.patient-home-header { background:linear-gradient(180deg,var(--warm-secondary),transparent); }
+.patient-home-paw { background:var(--warm-surface); color:var(--warm-text); }
+.patient-home-actions .patient-count { color:var(--warm-text); }
+.patient-tile { background:linear-gradient(155deg,#413630,var(--warm-card) 70%,#302823); border-color:var(--warm-border); box-shadow:0 4px 14px #0003; }
+.patient-list .patient-card:active { background:var(--warm-surface); }
+.patient-card-photo, .patient-list .patient-photo { background:var(--warm-surface); color:var(--warm-text); }
+.patient-card-photo::after { display:none; }
+.patient-card-name { color:var(--warm-text); }
+.patient-card-diagnosis { color:var(--warm-text); }
+.bottom-nav { background:#211c1aee; border-color:var(--warm-border); }
+.bottom-nav button, .bottom-nav button.active { background:transparent; color:var(--warm-muted); text-shadow:none; }
+.bottom-nav button.active::after { background:var(--warm-accent); box-shadow:none; }
+.time-block { background:var(--warm-secondary); border-color:var(--warm-border); }
+.time-block h2, .current-block h2, .next-block h2, .time-toggle { background:var(--warm-surface); color:var(--warm-text); border-color:var(--warm-border); }
+.time-block h2 time, .time-block h2 > span { color:var(--warm-muted); }
+.past-block .time-toggle { background:#563832; color:#f2c2b6; }
+.work-patient-toggle, .compact-feed-patient-toggle { color:var(--warm-text); }
+.compact-feed-patient-head, .compact-feed-patient-toggle { background:var(--warm-card); }
+.compact-feed-patient-toggle { background:transparent; }
+.work-item { background:var(--warm-secondary); color:var(--warm-text); border-color:var(--warm-border); border-left-color:var(--prescription-color); }
+.work-count, .compact-feed-filters button { background:var(--warm-surface); color:var(--warm-text); }
+.work-row-top time, .work-patient-meta { color:var(--warm-muted); }
+.grid-scroll, .grid-frame-expanded, .overview-scroll { background:var(--warm-bg); border-color:var(--warm-border); }
+.grid-head, .overview-head, .grid-category { background:var(--warm-surface); color:var(--warm-text); }
+.grid-head > div, .grid-row button, .overview-head > div, .overview-row button { border-color:var(--warm-border); }
+.name-cell, .overview-name, .grid-head .name-head { background:var(--warm-card); color:var(--warm-text); }
+.grid-head .current { background:#6b4b3b; color:var(--warm-text); }
+.hour-cell.current { box-shadow:inset 0 0 0 2px #d8a17f; }
+.grid-expand { background:#302925d9; border-color:#bdb2aa88; color:var(--warm-text); }
+.feed-extra-panel .category-tabs button, .feed-extra-panel .work-view-filter button { color:var(--warm-text); }
+.feed-extra-panel .category-tabs button.active, .feed-extra-panel .work-view-filter button.active { color:var(--warm-text); background:var(--warm-surface); }
+.demo-banner, .avatar, .patient-list .patient-photo, .compact-feed-patient-toggle .patient-photo { background:var(--warm-surface); color:var(--warm-text); }
+.read-badge, .count-badge, .view-switch, .feed-extra-panel .work-view-filter { background:var(--warm-secondary); border-color:var(--warm-border); color:var(--warm-muted); }
+.patient-photo-edit { background:var(--warm-surface); border-color:var(--warm-card); color:var(--warm-text); }
+.patient-card-menu { background:#302925d9; color:var(--warm-text); }
+.grid-legend, .data-received, .chevron, .work-empty { color:var(--warm-muted); }
+.sheet-handle { background:#88776e; }
+.bottom-sheet dt, .bottom-sheet dd, .sheet-header .eyebrow { color:var(--warm-muted); }
+.bottom-sheet dd { color:var(--warm-text); }
+.revision-detail, .bottom-sheet dl, .patient-heading, .diagnosis { border-color:var(--warm-border); }

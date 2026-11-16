@@ -144,7 +144,7 @@ export function PatientEntityDialog({
   return (
     <dialog
       ref={dialog}
-      className="bottom-sheet patient-ops-dialog"
+      className="bottom-sheet test3-dialog patient-ops-dialog"
       aria-labelledby="patient-entity-title"
       onCancel={(e) => {
         e.preventDefault();

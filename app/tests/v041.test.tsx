@@ -260,10 +260,10 @@ it("manual department choice, disabled editing and auth survive reload", async (
       ) as HTMLInputElement
     ).checked,
   ).toBe(false);
-  expect(localStorage.getItem("clevervet.mobile.preferences.v1")).not.toContain(
+  expect(localStorage.getItem("clevervet.mobile.test3.preferences.v1")).not.toContain(
     "Учебный пациент",
   );
-  expect(localStorage.getItem("clevervet.mobile.preferences.v1")).not.toContain(
+  expect(localStorage.getItem("clevervet.mobile.test3.preferences.v1")).not.toContain(
     "MOCK_VALUE_NOT_JWT",
   );
 });

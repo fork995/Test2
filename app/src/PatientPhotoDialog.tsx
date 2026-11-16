@@ -67,7 +67,7 @@ export function PatientPhotoDialog({
   return (
     <dialog
       ref={dialog}
-      className="bottom-sheet patient-photo-dialog"
+      className="bottom-sheet test3-dialog patient-photo-dialog"
       aria-labelledby="patient-photo-title"
       onCancel={(event) => {
         event.preventDefault();

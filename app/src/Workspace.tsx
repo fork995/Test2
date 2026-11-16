@@ -650,7 +650,7 @@ function Department({
   return (
     <>
       <main
-        className={`workspace mobile-workspace ${selected && tab === "patients" ? "individual-workspace" : ""}`}
+        className={`workspace mobile-workspace ${selected && tab === "patients" ? "individual-workspace test3-patient" : ""}`}
       >
         {selectionNotice && tab !== "archive" && (
           <section className="panel" aria-label="Выбор отделения">
@@ -1117,7 +1117,7 @@ function Department({
             {selected.diagnoses && (
               <p className="diagnosis">{selected.diagnoses}</p>
             )}
-            {selected.ownerName && (
+<details className="test3-patient-info"><summary>Сведения, владелец и личные вещи</summary>            {selected.ownerName && (
               <p className="patient-owner">Владелец: {selected.ownerName}</p>
             )}
             {source.discharge && cardState(selected) === "active" && (
@@ -1200,7 +1200,7 @@ function Department({
                 onExpire={() => expire.current()}
               />
             )}
-            {source.prescriptions && (
+</details>            {source.prescriptions && (
               <button
                 className="secondary small"
                 disabled={!writeEnabled || !selectedData?.hasData || !!editing}
@@ -1230,7 +1230,7 @@ function Department({
                 Сетка
               </button>
             </div>
-            {filters}
+            <details className="test3-category-menu"><summary>{FILTERS.find(([value]) => value === category)?.[1] || "Категории"} ▾</summary>{filters}</details>
             {mode === "feed" && viewFilter}
             <DataState
               data={selectedData}
@@ -1247,6 +1247,7 @@ function Department({
                   </p>
                   {mode === "feed" ? (
                     <WorkBoard
+                      individual
                       patients={individualPatients}
                       snapshot={snapshot}
                       period={period}
@@ -1264,9 +1265,10 @@ function Department({
                   ) : period ? (
                     <>
                       <span className="grid-legend">
-                        ✓ выполнено · × не выполнено · — нет результата
+                        ✓ выполнено · × не выполнено · — нет результата · ? статус неизвестен · число — несколько результатов
                       </span>
                       <Grid
+                        patientName={selected.name}
                         key={`${period.key}:${category}`}
                         indexes={selectedData.indexes.filter(
                           (i) =>

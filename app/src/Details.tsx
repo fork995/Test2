@@ -167,7 +167,7 @@ export function Details({
   return (
     <dialog
       ref={ref}
-      className="bottom-sheet appointment-details"
+      className="bottom-sheet test3-dialog appointment-details"
       aria-labelledby="detail-title"
       onCancel={(e) => {
         e.preventDefault();

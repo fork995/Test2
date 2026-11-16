@@ -228,7 +228,8 @@ it("omits owner from compact cards but keeps it below diagnosis in patient detai
   expect(container.textContent).not.toMatch(/HIDDEN_PHONE|HIDDEN_EMAIL/);
   await openPatient();
   const owner = container.querySelector(".patient-owner")!;
-  expect(owner.previousElementSibling?.className).toBe("diagnosis");
+  expect(owner.closest(".test3-patient-info")).not.toBeNull();
+  expect(container.querySelector(".diagnosis")).not.toBeNull();
   expect(owner.textContent).toContain(
     "Учебная Анна Вымышленная",
   );

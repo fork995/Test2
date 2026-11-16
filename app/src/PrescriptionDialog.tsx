@@ -283,7 +283,7 @@ export function PrescriptionDialog({
   return (
     <dialog
       ref={dialog}
-      className="bottom-sheet prescription-dialog"
+      className="bottom-sheet test3-dialog prescription-dialog"
       aria-labelledby="prescription-title"
       onCancel={(e) => {
         e.preventDefault();

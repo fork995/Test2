@@ -492,6 +492,9 @@ it("individual patient defaults to the same worklist and can switch to grid and 
   expect(
     container.querySelectorAll(".individual-workspace .current-block .work-patient-toggle"),
   ).toHaveLength(1);
+  expect(container.querySelector(".current-block .work-item")).not.toBeNull();
+  await click(container.querySelector(".individual-workspace .current-block .work-patient-toggle")!);
+  expect(container.querySelector(".current-block .work-item")).toBeNull();
   await click(container.querySelector(".individual-workspace .current-block .work-patient-toggle")!);
   expect(container.querySelector(".current-block .work-item")).not.toBeNull();
   await click(button("Сетка", container.querySelector(".view-switch")!));

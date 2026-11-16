@@ -155,6 +155,7 @@ export function WorkBoard({
   onOpenPatient,
   onRetry,
   compact = false,
+  individual = false,
 }: {
   patients: Patient[];
   snapshot: Map<string, CardData>;
@@ -170,6 +171,7 @@ export function WorkBoard({
   onOpenPatient: (p: Patient) => void;
   onRetry: (card: string) => void;
   compact?: boolean;
+  individual?: boolean;
 }) {
   const policy = demo ? DEMO_SCHEDULE_POLICY : API_SCHEDULE_POLICY;
   const cache = useRef(
@@ -264,14 +266,14 @@ export function WorkBoard({
   ) {
     return groups.map(({ prepared: p, rows }) => {
       const expansion = `${key}:${p.patient.cardId}`,
-        open = expanded.has(expansion);
+        open = individual ? !expanded.has(`collapsed:${expansion}`) : expanded.has(expansion);
       return (
         <section className="work-patient" key={p.patient.cardId}>
           <button
             className="work-patient-toggle"
             aria-expanded={open}
             aria-label={`${open ? "Свернуть" : "Раскрыть"} ${p.patient.name}, ${rows.length} назначений, ${key}`}
-            onClick={() => toggle(expansion)}
+            onClick={() => toggle(individual ? `collapsed:${expansion}` : expansion)}
           >
             <span className="work-patient-name">{p.patient.name}</span>
             <span className="work-patient-meta">

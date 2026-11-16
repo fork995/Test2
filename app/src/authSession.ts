@@ -1,6 +1,6 @@
 import { jwtExpiresAt } from "./authImport";
 
-export const AUTH_SESSION_KEY = "clevervet.mobile.auth-session.v1";
+export const AUTH_SESSION_KEY = "clevervet.mobile.test3.auth-session.v1";
 const VERSION = 1 as const;
 const MAX_TOKEN_LENGTH = 16_384;
 

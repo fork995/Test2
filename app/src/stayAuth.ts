@@ -1,6 +1,6 @@
-export const STAY_READY_EVENT = "clevervet-mobile:stay-ready:v1";
-export const STAY_BRIDGE_READY_EVENT = "clevervet-mobile:stay-bridge-ready:v1";
-export const STAY_TOKEN_EVENT = "clevervet-mobile:stay-token:v1";
+export const STAY_READY_EVENT = "clevervet-mobile:test3-stay-ready:v1";
+export const STAY_BRIDGE_READY_EVENT = "clevervet-mobile:test3-stay-bridge-ready:v1";
+export const STAY_TOKEN_EVENT = "clevervet-mobile:test3-stay-token:v1";
 export const STAY_TRANSFER_MAX_AGE_MS = 3 * 60 * 1000;
 
 export type StayAuthTransfer = {

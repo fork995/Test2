@@ -27,8 +27,8 @@ export interface Selection {
   at?: number;
   entries?: Entry[];
 }
-export const GRID_ROW = 44,
-  GRID_HOUR = 45,
+export const GRID_ROW = 64,
+  GRID_HOUR = 48,
   GRID_HEADER = 40;
 const ROW = GRID_ROW;
 const GridRow = memo(function GridRow({
@@ -39,6 +39,7 @@ const GridRow = memo(function GridRow({
   now,
   onSelect,
   position,
+  height,
   rowNumber,
   fromColumn,
   toColumn,
@@ -50,6 +51,7 @@ const GridRow = memo(function GridRow({
   now: number;
   onSelect: (s: Selection) => void;
   position: number;
+  height: number;
   rowNumber: number;
   fromColumn: number;
   toColumn: number;
@@ -92,7 +94,7 @@ const GridRow = memo(function GridRow({
       className="grid-row"
       role="row"
       aria-rowindex={rowNumber + 2}
-      style={{ top: position }}
+      style={{ top: position, height }}
     >
       <button
         role="rowheader"
@@ -175,6 +177,7 @@ const GridRow = memo(function GridRow({
 });
 export function Grid({
   indexes,
+  patientName,
   start,
   end,
   zone,
@@ -182,6 +185,7 @@ export function Grid({
   onSelect,
 }: {
   indexes: IndexedChain[];
+  patientName?: string;
   start: number;
   end: number;
   zone: string;
@@ -194,7 +198,7 @@ export function Grid({
     count: 12,
     column: 0,
     columns: 10,
-    nameWidth: 110,
+    nameWidth: 145,
   });
   const container = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);
@@ -239,10 +243,7 @@ export function Grid({
     const resize = () =>
       setViewport((v) => ({
         ...v,
-        nameWidth: Math.min(
-          115,
-          Math.max(105, Math.round(el.clientWidth * 0.3) || 110),
-        ),
+        nameWidth: 145,
         count: Math.ceil(el.clientHeight / ROW) || 12,
         columns: Math.max(
           3,
@@ -269,12 +270,13 @@ export function Grid({
       ["NURSING", "Уход"],
     ] as const;
     const known = new Set<string>(groups.map(([type]) => type));
-    const rows: ({ kind: "heading"; label: string; top: number } | { kind: "item"; index: IndexedChain; top: number })[] = [];
+    const rows: ({ kind: "heading"; label: string; top: number } | { kind: "item"; index: IndexedChain; top: number; height: number })[] = [];
     let top = 0;
     const add = (label: string, items: IndexedChain[]) => {
       if (!items.length) return;
       rows.push({ kind: "heading", label, top }); top += 28;
-      for (const index of items) { rows.push({ kind: "item", index, top }); top += ROW; }
+      for (const index of items) { const height = Math.max(ROW, Math.ceil(index.chain.name.length / 14) * 17 + (["MEDICATION", "SOLUTION"].includes(index.chain.type) ? 36 : 0) + 24);
+        rows.push({ kind: "item", index, top, height }); top += height; }
     };
     groups.forEach(([type, label]) => add(label, indexes.filter((index) => index.chain.type === type)));
     add("Без категории", indexes.filter((index) => !known.has(index.chain.type)));
@@ -288,7 +290,7 @@ export function Grid({
     toColumn = Math.min(ticks.length, viewport.column + viewport.columns);
   return (
     <div className={`grid-frame${expanded ? " grid-frame-expanded" : ""}`}>
-      <div className="grid-toolbar"><button type="button" className="grid-expand" aria-label={expanded ? "Свернуть сетку" : "Расширить сетку"} onClick={() => setExpanded((v) => !v)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{expanded ? <path d="M4 9h5V4M20 15h-5v5M9 9 3 3M15 15l6 6"/> : <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>}</svg></button></div>
+      <div className="grid-toolbar"><span className="test3-grid-context">{patientName && `${patientName} · `}{formatDate(start, zone)} · {zone}</span><button type="button" className="grid-expand" aria-label={expanded ? "Свернуть сетку" : "Расширить сетку"} onClick={() => setExpanded((v) => !v)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{expanded ? <path d="M4 9h5V4M20 15h-5v5M9 9 3 3M15 15l6 6"/> : <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>}</svg></button></div>
     <div
       ref={container}
       className="grid-scroll"
@@ -349,7 +351,7 @@ export function Grid({
           {grouped.rows.slice(first, last).map((row, i) => row.kind === "heading" ? (
             <div key={`group:${row.label}`} role="row" aria-rowindex={first + i + 2} className="grid-category" style={{ top: row.top }}><span role="rowheader">{row.label}</span></div>
           ) : (
-            <GridRow key={row.index.chain.id} index={row.index} position={row.top} rowNumber={first + i} ticks={ticks} end={end} zone={zone} now={now} onSelect={onSelect} fromColumn={fromColumn} toColumn={toColumn} />
+            <GridRow key={row.index.chain.id} index={row.index} position={row.top} height={row.height} rowNumber={first + i} ticks={ticks} end={end} zone={zone} now={now} onSelect={onSelect} fromColumn={fromColumn} toColumn={toColumn} />
           ))}
         </div>
       </div>

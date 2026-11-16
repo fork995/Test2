@@ -7,7 +7,7 @@ import {
 } from "../src/preferences";
 import { initialDepartment } from "../src/departmentSelection";
 import { normalizeBranches } from "../src/model";
-const KEY = "clevervet.mobile.preferences.v1";
+const KEY = "clevervet.mobile.test3.preferences.v1";
 beforeEach(() => {
   localStorage.clear();
   readPreferences();

@@ -163,7 +163,7 @@ export function ResultEditor({
   return (
     <dialog
       ref={dialog}
-      className="bottom-sheet result-editor"
+      className="bottom-sheet test3-dialog result-editor"
       aria-labelledby="result-title"
       onCancel={(e) => {
         e.preventDefault();

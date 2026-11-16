@@ -7,8 +7,8 @@ export interface Preferences {
   editingEnabled: boolean;
   department: DepartmentChoice | null;
 }
-const KEY = "clevervet.mobile.preferences.v1";
-const DEMO_KEY = "clevervet.mobile.demo-preferences.v1";
+const KEY = "clevervet.mobile.test3.preferences.v1";
+const DEMO_KEY = "clevervet.mobile.test3.demo-preferences.v1";
 const defaults = (): Preferences => ({
   editingEnabled: true,
   department: null,

@@ -111,7 +111,7 @@ export function DischargeDialog({
   return (
     <dialog
       ref={dialog}
-      className="bottom-sheet discharge-dialog"
+      className="bottom-sheet test3-dialog discharge-dialog"
       aria-labelledby="discharge-title"
       onCancel={(e) => {
         e.preventDefault();

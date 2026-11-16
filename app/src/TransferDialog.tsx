@@ -113,7 +113,7 @@ export function TransferDialog({
   return (
     <dialog
       ref={dialog}
-      className="bottom-sheet discharge-dialog transfer-dialog"
+      className="bottom-sheet test3-dialog discharge-dialog transfer-dialog"
       aria-labelledby="transfer-title"
       onCancel={(e) => {
         e.preventDefault();

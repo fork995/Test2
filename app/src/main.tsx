@@ -37,3 +37,5 @@ export function mountApp(onReady: () => void) {
   );
   return () => root.unmount();
 }
+
+import "./test3.css";
